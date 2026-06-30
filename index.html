@@ -361,6 +361,32 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .view.active{display:block}
 .loading{text-align:center;color:var(--text3);padding:50px;font-size:13px}
 
+/* ===== admin ===== */
+.view-toolbar{max-width:980px;margin:0 auto 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.view-toolbar h2{font-size:18px;font-weight:800;flex:1}
+.btn-novo{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#080808;border:none;padding:9px 15px;border-radius:var(--r);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer}
+.btn-novo:hover{background:var(--accent2)}
+.btn-novo .ic{font-size:15px}
+.card-admin{display:flex;gap:8px;margin-top:2px}
+.btn-mini{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border2);background:transparent;color:var(--text2);border-radius:var(--r);padding:6px 10px;font-size:12px;font-family:var(--font);cursor:pointer}
+.btn-mini .ic{font-size:13px}
+.btn-mini:hover{border-color:var(--accent);color:var(--orange-l)}
+.btn-mini.del:hover{border-color:var(--red);color:var(--red-l)}
+.utable{max-width:840px;margin:0 auto;width:100%;border-collapse:collapse}
+.utable th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.utable td{padding:10px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)}
+.utable tr:hover td{background:var(--surface2)}
+.papel-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--r-full)}
+.papel-admin{background:rgba(207,101,20,.15);color:var(--orange-l)}
+.papel-vendedor{background:rgba(59,130,246,.15);color:var(--blue-l)}
+.papel-espectador{background:var(--surface3);color:var(--text3)}
+.st-inativo{color:var(--text3)}
+.urow-acts{display:flex;gap:6px;justify-content:flex-end}
+.modal .row{display:flex;gap:10px}
+.modal .row > *{flex:1}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--text2);cursor:pointer;margin:4px 0 2px}
+.senha-info{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green-l);font-size:12px;padding:8px 12px;border-radius:var(--r);margin-top:10px;display:none}
+
 </style>
 </head>
 <body>
@@ -549,6 +575,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
       <div class="view" id="view-tours"></div>
       <div class="view" id="view-postos"></div>
       <div class="view" id="view-repo"></div>
+      <div class="view" id="view-usuarios"></div>
     </div>
   </div>
 </div>
@@ -568,6 +595,56 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
   </div>
 </div>
 
+
+<!-- MODAL TEMPLATE -->
+<div class="modal-overlay" id="modalTpl"><div class="modal" style="max-width:600px">
+  <h2 id="tplTit">Novo template</h2>
+  <div class="form-group"><label>Título</label><input id="tplTitulo"></div>
+  <div class="row">
+    <div class="form-group"><label>Destino</label><select id="tplDestino"><option value="Geral">Geral (sem destino)</option><option>Atacama</option><option>Uyuni</option><option>Santiago</option><option>Peru</option><option>Cartagena</option><option>San Andrés</option></select></div>
+    <div class="form-group"><label>Tipo</label><select id="tplTipo" onchange="onTipoSel()"></select><input id="tplTipoNovo" placeholder="Nome do novo tipo" style="display:none;margin-top:6px"></div>
+  </div>
+  <div class="form-group"><label>Mensagem (mantém *negrito* e emojis)</label><textarea id="tplTexto"></textarea></div>
+  <div class="row">
+    <div class="form-group"><label>Chave (opcional)</label><input id="tplChave"></div>
+    <div class="form-group" style="max-width:110px"><label>Ordem</label><input id="tplOrdem" type="number" value="0"></div>
+    <div class="form-group" style="max-width:130px"><label>Status</label><select id="tplStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+  </div>
+  <label class="chk"><input type="checkbox" id="tplInterno"> Uso interno (selo vermelho — não enviar ao cliente)</label>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalTpl')">Cancelar</button><button class="btn-modal-save" onclick="salvarTpl()">Salvar</button></div>
+</div></div>
+
+<!-- MODAL AVISO -->
+<div class="modal-overlay" id="modalAviso"><div class="modal" style="max-width:520px">
+  <h2 id="avTit">Novo aviso</h2>
+  <div class="form-group"><label>Título</label><input id="avTitulo"></div>
+  <div class="form-group"><label>Texto</label><textarea id="avTexto"></textarea></div>
+  <div class="row">
+    <label class="chk"><input type="checkbox" id="avFixado"> Fixar no topo</label>
+    <div class="form-group" style="max-width:130px"><label>Status</label><select id="avStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+  </div>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalAviso')">Cancelar</button><button class="btn-modal-save" onclick="salvarAviso()">Salvar</button></div>
+</div></div>
+
+<!-- MODAL USUARIO -->
+<div class="modal-overlay" id="modalUser"><div class="modal" style="max-width:460px">
+  <h2 id="usTit">Nova pessoa</h2>
+  <div class="form-group"><label>Nome</label><input id="usNome"></div>
+  <div class="form-group"><label>Usuário (login)</label><input id="usUsername" placeholder="ex.: joao"></div>
+  <div class="row">
+    <div class="form-group"><label>Papel</label><select id="usPapel"><option value="vendedor">Vendedor</option><option value="admin">Admin</option><option value="espectador">Espectador</option></select></div>
+    <div class="form-group"><label>Status</label><select id="usStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+  </div>
+  <div class="senha-info" id="usSenhaInfo"></div>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalUser')">Cancelar</button><button class="btn-modal-save" id="usSalvarBtn" onclick="salvarUser()">Salvar</button></div>
+</div></div>
+
+<!-- MODAL CONFIRM -->
+<div class="modal-overlay" id="modalConf"><div class="modal confirm-modal">
+  <p id="confMsg">Confirma?</p>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalConf')">Cancelar</button><button class="btn-confirm-delete" onclick="_confExec()">Confirmar</button></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -577,7 +654,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 // CONFIG — preencha a ANON KEY do projeto fgt-vendas
 // ============================================================
 const SB_URL  = 'https://ufdinaeooqsnnyiuqzsy.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmZGluYWVvb3Fzbm55aXVxenN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4Mjk4OTYsImV4cCI6MjA5ODQwNTg5Nn0.Lq_8DVwcyR_rNcugU4UCc0nYuygXLA8Mo7OuP9e6AaI';
+const SB_ANON = 'COLE_AQUI_A_ANON_KEY_DO_FGT_VENDAS';
 
 const sb = supabase.createClient(SB_URL, SB_ANON, { auth: { persistSession: true, autoRefreshToken: true } });
 
@@ -673,6 +750,7 @@ function renderNav(){
   h+='<button class="nav-item" onclick="irView(\'destinos\')">'+icon('mountain')+' Destinos Operados</button>';
   h+='<button class="nav-item" onclick="irView(\'tours\')">'+icon('route')+' Links dos Tours</button>';
   h+='<button class="nav-item" onclick="irView(\'postos\')">'+icon('shield')+' Postos Médicos</button>';
+  if(isAdmin()){ h+='<div class="nav-section">Administração</div>'; h+='<button class="nav-item'+(currentView==='usuarios'?' active':'')+'" onclick="irView(\'usuarios\')">'+icon('users')+' Usuários</button>'; }
   h+='<div class="nav-section">Recursos</div>';
   h+='<button class="nav-item" onclick="irView(\'repo\')">'+icon('folder')+' Links Úteis / Repositório</button>';
   document.getElementById('nav').innerHTML=h;
@@ -686,6 +764,7 @@ function irView(v){
   fecharSidebar(); renderNav();
   if(v==='avisos') carregarAvisos();
   if(['destinos','tours','postos','repo'].includes(v)) renderEmBreve(v);
+  if(v==='usuarios') carregarUsuarios();
 }
 function irTemplates(destino,tipo){
   currentView='templates'; _filtro={destino,tipo}; _busca=''; document.getElementById('busca').value='';
@@ -731,7 +810,7 @@ function renderTemplates(){
   }
   const rows=filtrar();
   if(isAdmin()){
-    area.innerHTML='<div style="max-width:980px;margin:0 auto 4px;display:flex;justify-content:flex-end"><label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" '+(_verInativos?'checked':'')+' onchange="_verInativos=this.checked;renderTemplates()"> mostrar inativos</label></div>'+_renderCards(rows);
+    area.innerHTML='<div class="view-toolbar"><h2>Templates</h2><button class="btn-novo" onclick="abrirNovoTpl()">'+icon('pencil')+' Novo template</button></div><div style="max-width:980px;margin:0 auto 4px;display:flex;justify-content:flex-end"><label style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" '+(_verInativos?'checked':'')+' onchange="_verInativos=this.checked;renderTemplates()"> mostrar inativos</label></div>'+_renderCards(rows);
   } else {
     area.innerHTML=_renderCards(rows);
   }
@@ -768,7 +847,9 @@ function cardHTML(t){
     +'<div class="card-actions">'
     +'<button class="btn-expand" onclick="expandir('+t.id+',this)">Ver mais</button>'
     +'<button class="btn-copy" onclick="copiar('+t.id+',this)">'+icon('copy')+' Copiar mensagem</button>'
-    +'</div></div>';
+    +'</div>'
+    +(isAdmin()?('<div class="card-admin"><button class="btn-mini" onclick="abrirEditarTpl('+t.id+')">'+icon('pencil')+' Editar</button><button class="btn-mini del" onclick="excluirTpl('+t.id+')">'+icon('trash-2')+' Excluir</button></div>'):'')
+    +'</div>';
 }
 function badgeClasse(d){ const m={'Atacama':'badge-atacama','Uyuni':'badge-uyuni','Santiago':'badge-santiago','Peru':'badge-peru','Cartagena':'badge-cartagena','San Andrés':'badge-sanandres','Geral':'badge-vendas'}; return m[d]||'badge-empresa'; }
 function expandir(id,btn){ const el=document.getElementById('txt-'+id); el.classList.toggle('expanded'); btn.textContent=el.classList.contains('expanded')?'Ver menos':'Ver mais'; }
@@ -785,11 +866,12 @@ async function carregarAvisos(){
   try{
     const { data, error } = await sb.from('avisos_vendas').select('*').eq('status','ativo').order('fixado',{ascending:false}).order('created_at',{ascending:false});
     if(error) throw error;
-    if(!data.length){ area.innerHTML='<div class="embreve">'+icon('bell')+'<h3>Sem avisos por enquanto</h3><p>Avisos publicados pelos admins aparecem aqui. O feed do HUB (mensagens marcadas “Notificar Time de Vendas”) entra quando ligarmos o FDW.</p></div>'; return; }
-    let h='<div class="tpl-group">';
-    data.forEach(a=>{ h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div></div><div class="card-text expanded">'+escH(a.texto)+'</div><div style="font-size:11px;color:var(--text3);margin-top:4px">'+escH(a.autor||'')+'</div></div>'; });
+    let top = isAdmin()?('<div class="view-toolbar"><h2>Avisos</h2><button class="btn-novo" onclick="abrirNovoAviso()">'+icon('bell')+' Novo aviso</button></div>'):'';
+    if(!data.length){ area.innerHTML=top+'<div class="embreve">'+icon('bell')+'<h3>Sem avisos por enquanto</h3><p>Avisos publicados pelos admins aparecem aqui. O feed do HUB (mensagens marcadas “Notificar Time de Vendas”) entra quando ligarmos o FDW.</p></div>'; return; }
+    let h=top+'<div class="tpl-group">';
+    data.forEach(a=>{ h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div></div><div class="card-text expanded">'+escH(a.texto)+'</div><div style="display:flex;align-items:center;margin-top:6px"><div style="font-size:11px;color:var(--text3);flex:1">'+escH(a.autor||'')+'</div>'+(isAdmin()?('<div class="urow-acts"><button class="btn-mini" onclick="abrirEditarAviso('+a.id+')">'+icon('pencil')+'</button><button class="btn-mini del" onclick="excluirAviso('+a.id+')">'+icon('trash-2')+'</button></div>'):'')+'</div></div>'; });
     h+='</div>';
-    area.innerHTML=h;
+    area.innerHTML=h; _avisos=data;
   }catch(ex){ area.innerHTML='<div class="loading">Erro: '+escH(ex.message||ex)+'</div>'; }
 }
 
@@ -829,6 +911,199 @@ function fecharSidebar(){ document.getElementById('sidebar').classList.remove('o
 
 // fechar menu de perfil ao clicar fora
 document.addEventListener('click',function(e){ const f=document.querySelector('.sidebar-footer'); const m=document.getElementById('profileMenu'); if(m&&f&&!f.contains(e.target)) m.classList.remove('open'); });
+
+
+// ============================================================
+// EDGE FUNCTIONS helper
+// ============================================================
+async function callEdge(fn, body){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session) throw new Error('Sessão expirada.');
+  const r = await fetch(SB_URL + '/functions/v1/' + fn, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + session.access_token },
+    body: JSON.stringify(body)
+  });
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error || ('Erro na função '+fn));
+  return j;
+}
+
+// confirm genérico
+let _confCb=null;
+function pedirConfirm(msg, cb){ document.getElementById('confMsg').textContent=msg; _confCb=cb; document.getElementById('modalConf').classList.add('open'); }
+function _confExec(){ fecharModal('modalConf'); if(_confCb) _confCb(); _confCb=null; }
+
+// ============================================================
+// TEMPLATES — CRUD (admin)
+// ============================================================
+let _tplEdit=null;
+function _tipoOpts(sel){
+  const all = SUBCATS.concat(OUTROS);
+  return all.map(t=>'<option'+(t===sel?' selected':'')+'>'+t+'</option>').join('') + '<option value="__novo">+ Novo tipo…</option>';
+}
+function onTipoSel(){ const s=document.getElementById('tplTipo'); const n=document.getElementById('tplTipoNovo'); n.style.display = s.value==='__novo'?'block':'none'; }
+function abrirNovoTpl(){
+  _tplEdit=null;
+  document.getElementById('tplTit').textContent='Novo template';
+  document.getElementById('tplTitulo').value='';
+  document.getElementById('tplDestino').value = _filtro.destino || 'Geral';
+  document.getElementById('tplTipo').innerHTML=_tipoOpts(_filtro.tipo||'');
+  document.getElementById('tplTipoNovo').style.display='none'; document.getElementById('tplTipoNovo').value='';
+  document.getElementById('tplTexto').value='';
+  document.getElementById('tplChave').value='';
+  document.getElementById('tplOrdem').value=0;
+  document.getElementById('tplStatus').value='ativo';
+  document.getElementById('tplInterno').checked=false;
+  document.getElementById('modalTpl').classList.add('open');
+}
+function abrirEditarTpl(id){
+  const t=_templates.find(x=>x.id===id); if(!t)return; _tplEdit=t;
+  document.getElementById('tplTit').textContent='Editar template';
+  document.getElementById('tplTitulo').value=t.titulo;
+  document.getElementById('tplDestino').value=t.destino;
+  document.getElementById('tplTipo').innerHTML=_tipoOpts(t.tipo);
+  document.getElementById('tplTipoNovo').style.display='none'; document.getElementById('tplTipoNovo').value='';
+  document.getElementById('tplTexto').value=t.texto;
+  document.getElementById('tplChave').value=t.chave||'';
+  document.getElementById('tplOrdem').value=t.ordem||0;
+  document.getElementById('tplStatus').value=t.status||'ativo';
+  document.getElementById('tplInterno').checked=!!t.uso_interno;
+  document.getElementById('modalTpl').classList.add('open');
+}
+async function salvarTpl(){
+  let tipo=document.getElementById('tplTipo').value;
+  if(tipo==='__novo'){ tipo=document.getElementById('tplTipoNovo').value.trim(); if(!tipo){ showToast('Informe o nome do novo tipo.'); return; } }
+  const row={
+    destino: document.getElementById('tplDestino').value,
+    tipo: tipo,
+    titulo: document.getElementById('tplTitulo').value.trim(),
+    texto: document.getElementById('tplTexto').value,
+    chave: document.getElementById('tplChave').value.trim()||null,
+    ordem: parseInt(document.getElementById('tplOrdem').value)||0,
+    status: document.getElementById('tplStatus').value,
+    uso_interno: document.getElementById('tplInterno').checked
+  };
+  if(!row.titulo || !row.texto){ showToast('Título e mensagem são obrigatórios.'); return; }
+  try{
+    if(_tplEdit){ const {error}=await sb.from('mensagens_vendas').update(row).eq('id',_tplEdit.id); if(error)throw error; }
+    else { const {error}=await sb.from('mensagens_vendas').insert(row); if(error)throw error; }
+    fecharModal('modalTpl'); showToast('Template salvo!'); await carregarTemplates();
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+}
+function excluirTpl(id){
+  const t=_templates.find(x=>x.id===id); if(!t)return;
+  pedirConfirm('Excluir o template "'+t.titulo+'"?', async ()=>{
+    try{ const {error}=await sb.from('mensagens_vendas').delete().eq('id',id); if(error)throw error; showToast('Excluído.'); await carregarTemplates(); }
+    catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  });
+}
+
+// ============================================================
+// AVISOS — CRUD (admin)
+// ============================================================
+let _avisos=[]; let _avisoEdit=null;
+function abrirNovoAviso(){ _avisoEdit=null; document.getElementById('avTit').textContent='Novo aviso'; document.getElementById('avTitulo').value=''; document.getElementById('avTexto').value=''; document.getElementById('avFixado').checked=false; document.getElementById('avStatus').value='ativo'; document.getElementById('modalAviso').classList.add('open'); }
+function abrirEditarAviso(id){ const a=_avisos.find(x=>x.id===id); if(!a)return; _avisoEdit=a; document.getElementById('avTit').textContent='Editar aviso'; document.getElementById('avTitulo').value=a.titulo; document.getElementById('avTexto').value=a.texto; document.getElementById('avFixado').checked=!!a.fixado; document.getElementById('avStatus').value=a.status||'ativo'; document.getElementById('modalAviso').classList.add('open'); }
+async function salvarAviso(){
+  const row={ titulo:document.getElementById('avTitulo').value.trim(), texto:document.getElementById('avTexto').value, fixado:document.getElementById('avFixado').checked, status:document.getElementById('avStatus').value, autor: currentUser?currentUser.nome:null };
+  if(!row.titulo||!row.texto){ showToast('Preencha título e texto.'); return; }
+  try{
+    if(_avisoEdit){ const {error}=await sb.from('avisos_vendas').update(row).eq('id',_avisoEdit.id); if(error)throw error; }
+    else { const {error}=await sb.from('avisos_vendas').insert(row); if(error)throw error; }
+    fecharModal('modalAviso'); showToast('Aviso salvo!'); carregarAvisos();
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+}
+function excluirAviso(id){ pedirConfirm('Excluir este aviso?', async ()=>{ try{ const {error}=await sb.from('avisos_vendas').delete().eq('id',id); if(error)throw error; showToast('Excluído.'); carregarAvisos(); }catch(ex){ showToast('Erro: '+(ex.message||ex)); } }); }
+
+// ============================================================
+// USUÁRIOS — painel admin (Edge Functions)
+// ============================================================
+const DOMINIO='@fgtvendas.internal';
+let _users=[]; let _userEdit=null;
+async function carregarUsuarios(){
+  const area=document.getElementById('view-usuarios');
+  area.innerHTML='<div class="loading">Carregando usuários...</div>';
+  try{
+    const { data, error } = await sb.from('vendas_auth').select('*').order('nome');
+    if(error) throw error; _users=data||[];
+    let h='<div class="view-toolbar"><h2>Usuários</h2><button class="btn-novo" onclick="abrirNovoUser()">'+icon('users')+' Nova pessoa</button></div>';
+    h+='<table class="utable"><thead><tr><th>Nome</th><th>Usuário</th><th>Papel</th><th>Status</th><th></th></tr></thead><tbody>';
+    _users.forEach(u=>{
+      const pc={admin:'papel-admin',vendedor:'papel-vendedor',espectador:'papel-espectador'}[u.papel]||'papel-vendedor';
+      h+='<tr><td style="color:var(--text)">'+escH(u.nome)+'</td><td>'+escH(u.username)+'</td>'
+        +'<td><span class="papel-badge '+pc+'">'+escH(u.papel)+'</span></td>'
+        +'<td'+(u.status!=='ativo'?' class="st-inativo"':'')+'>'+escH(u.status)+'</td>'
+        +'<td><div class="urow-acts">'
+        +'<button class="btn-mini" onclick="abrirEditarUser('+u.id+')">'+icon('pencil')+'</button>'
+        +'<button class="btn-mini" onclick="resetSenhaUser('+u.id+')" title="Resetar senha">'+icon('key')+'</button>'
+        +'<button class="btn-mini del" onclick="excluirUser('+u.id+')">'+icon('trash-2')+'</button>'
+        +'</div></td></tr>';
+    });
+    h+='</tbody></table>';
+    area.innerHTML=h;
+  }catch(ex){ area.innerHTML='<div class="loading">Erro: '+escH(ex.message||ex)+'</div>'; }
+}
+function abrirNovoUser(){
+  _userEdit=null;
+  document.getElementById('usTit').textContent='Nova pessoa';
+  document.getElementById('usNome').value=''; document.getElementById('usUsername').value=''; document.getElementById('usUsername').disabled=false;
+  document.getElementById('usPapel').value='vendedor'; document.getElementById('usStatus').value='ativo';
+  document.getElementById('usSenhaInfo').style.display='none';
+  document.getElementById('modalUser').classList.add('open');
+}
+function abrirEditarUser(id){
+  const u=_users.find(x=>x.id===id); if(!u)return; _userEdit=u;
+  document.getElementById('usTit').textContent='Editar pessoa';
+  document.getElementById('usNome').value=u.nome; document.getElementById('usUsername').value=u.username; document.getElementById('usUsername').disabled=true;
+  document.getElementById('usPapel').value=u.papel; document.getElementById('usStatus').value=u.status;
+  document.getElementById('usSenhaInfo').style.display='none';
+  document.getElementById('modalUser').classList.add('open');
+}
+async function salvarUser(){
+  const nome=document.getElementById('usNome').value.trim();
+  const username=document.getElementById('usUsername').value.trim().toLowerCase().replace(/\s+/g,'');
+  const papel=document.getElementById('usPapel').value;
+  const status=document.getElementById('usStatus').value;
+  const btn=document.getElementById('usSalvarBtn');
+  if(!nome||!username){ showToast('Preencha nome e usuário.'); return; }
+  btn.disabled=true;
+  try{
+    if(_userEdit){
+      const {error}=await sb.from('vendas_auth').update({nome,papel,status}).eq('id',_userEdit.id); if(error)throw error;
+      fecharModal('modalUser'); showToast('Usuário atualizado!'); carregarUsuarios();
+    } else {
+      const auth_email=username+DOMINIO;
+      const senha=username+'123$';
+      await callEdge('create-auth-user', { email:auth_email, password:senha });
+      const {error}=await sb.from('vendas_auth').insert({username,auth_email,nome,papel,status}); if(error)throw error;
+      const info=document.getElementById('usSenhaInfo'); info.textContent='Conta criada! Senha padrão: '+senha+' (a pessoa troca no perfil).'; info.style.display='block';
+      showToast('Usuário criado!'); carregarUsuarios();
+      setTimeout(()=>{ document.getElementById('usNome').value=''; document.getElementById('usUsername').value=''; },50);
+    }
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  btn.disabled=false;
+}
+function resetSenhaUser(id){
+  const u=_users.find(x=>x.id===id); if(!u)return;
+  const nova=u.username+'123$';
+  pedirConfirm('Resetar a senha de '+u.nome+' para "'+nova+'"?', async ()=>{
+    try{ await callEdge('reset-password', { email:u.auth_email, new_password:nova }); showToast('Senha resetada: '+nova); }
+    catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  });
+}
+function excluirUser(id){
+  const u=_users.find(x=>x.id===id); if(!u)return;
+  if(currentUser && u.auth_email===currentUser.auth_email){ showToast('Você não pode excluir a si mesmo.'); return; }
+  pedirConfirm('Excluir '+u.nome+' definitivamente? A conta de login também será removida.', async ()=>{
+    try{
+      await callEdge('delete-auth-user', { email:u.auth_email });
+      const {error}=await sb.from('vendas_auth').delete().eq('id',id); if(error)throw error;
+      showToast('Usuário excluído.'); carregarUsuarios();
+    }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  });
+}
+
 
 // ---------- init ----------
 (function(){ if(_tema==='claro')document.body.classList.add('light-mode'); else document.body.classList.remove('light-mode'); })();
