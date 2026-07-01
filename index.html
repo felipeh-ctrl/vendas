@@ -425,6 +425,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .curtir-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .15s}
 .curtir-btn:hover{border-color:var(--accent);color:var(--orange-l)}
 .curtir-btn.on{background:rgba(207,101,20,.14);border-color:var(--accent);color:var(--orange-l)}
+.curtiu-info{position:relative;display:inline-flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer}
+.curtiu-info:hover{border-color:var(--accent);color:var(--orange-l)}
+.curtiu-pop{position:absolute;bottom:calc(100% + 8px);right:0;min-width:200px;max-width:280px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:var(--shadow-lg);padding:11px 13px;display:none;z-index:200;text-align:left;white-space:normal;cursor:default}
+.curtiu-info:hover .curtiu-pop,.curtiu-info.show .curtiu-pop{display:block}
+.curtiu-pop-h{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin-bottom:3px}
+.curtiu-pop-h.faltam{color:var(--text3);margin-top:10px}
+.curtiu-pop-l{font-size:12px;color:var(--text2);line-height:1.5;font-weight:400}
 .av-toolbar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
 .av-toolbar button{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:7px;padding:5px 10px;font-size:13px;font-family:var(--font);cursor:pointer;min-width:32px}
 .av-toolbar button:hover{border-color:var(--accent);color:var(--orange-l)}
@@ -1276,7 +1283,7 @@ async function _fetchHubAvisos(){
   try{ const { data, error } = await sbHub.from('vw_vendas_avisos').select('*').order('created_at',{ascending:false}); if(error) throw error; return data||[]; }
   catch(e){ return []; }
 }
-var _curtidas=new Set(); var _curtidasCount={}; var _curtidasQuem={};
+var _curtidas=new Set(); var _curtidasCount={}; var _curtidasQuem={}; var _avUsuarios=null; var _avEsperados=[];
 async function _carregarCurtidas(){
   try{
     var r=await sb.from('avisos_curtidas').select('usuario,aviso_key');
@@ -1289,6 +1296,12 @@ async function _carregarCurtidas(){
       if(x.usuario===meu) mine.add(x.aviso_key);
     });
     _curtidas=mine; _curtidasCount=cnt; _curtidasQuem=quem;
+    if(isAdmin() && !_avUsuarios){
+      try{
+        var u=await sb.from('vendas_auth').select('username,nome,status,papel');
+        if(u&&u.data){ _avUsuarios={}; _avEsperados=[]; u.data.forEach(function(x){ var nm=x.nome||x.username; _avUsuarios[x.username]=nm; if((x.status==='ativo'||!x.status) && x.papel!=='espectador') _avEsperados.push({username:x.username,nome:nm}); }); }
+      }catch(eu){}
+    }
   }catch(e){ _curtidas=new Set(); _curtidasCount={}; _curtidasQuem={}; }
 }
 async function toggleCurtir(key){
@@ -1343,9 +1356,16 @@ async function carregarAvisos(){
       const selo=isHub?('<span class="selo-hub">'+icon('plane')+' HUB</span>'):'';
       const acoes=(!isHub && isAdmin())?('<div class="urow-acts"><button class="btn-mini" onclick="abrirEditarAviso('+a.id+')">'+icon('pencil')+'</button><button class="btn-mini del" onclick="excluirAviso('+a.id+')">'+icon('trash-2')+'</button></div>'):'';
       var _k=String(a.id); var _liked=_curtidas.has(_k); var _cnt=_curtidasCount[_k]||0; var _quem=_curtidasQuem[_k]||[];
-      var _ct=(isAdmin()&&_quem.length)?(' title="Curtido por: '+_attrEsc(_quem.join(', '))+'"'):'';
-      var _curtirBtn='<button class="curtir-btn'+(_liked?' on':'')+'"'+_ct+' onclick="toggleCurtir(\''+_k+'\')">'+icon('heart')+' '+(_liked?'Curtido':'Curtir')+(_cnt?' \u00b7 '+_cnt:'')+'</button>';
-      h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div>'+selo+'</div><div class="card-text expanded">'+_avisoHTML(a.texto)+'</div><div class="aviso-foot"><div class="aviso-autor">'+escH(a.autor||'')+(isHub?' \u00b7 via HUB':'')+'</div><div class="aviso-acts">'+_curtirBtn+acoes+'</div></div></div>';
+      var _quemChip='';
+      if(isAdmin()){
+        var _nomesC=_quem.map(function(u){ return (_avUsuarios&&_avUsuarios[u])||u; });
+        var _faltam=(_avEsperados||[]).filter(function(x){ return _quem.indexOf(x.username)<0; }).map(function(x){ return x.nome; });
+        var _pop='<div class="curtiu-pop-h">Curtiram ('+_nomesC.length+')</div><div class="curtiu-pop-l">'+(_nomesC.length?escH(_nomesC.join(', ')):'—')+'</div>';
+        _pop+='<div class="curtiu-pop-h faltam">Faltam ('+_faltam.length+')</div><div class="curtiu-pop-l">'+(_faltam.length?escH(_faltam.join(', ')):'Todos curtiram!')+'</div>';
+        _quemChip='<span class="curtiu-info" onclick="this.classList.toggle(\'show\')">'+icon('users',14)+' '+_nomesC.length+'<span class="curtiu-pop">'+_pop+'</span></span>';
+      }
+      var _curtirBtn='<button class="curtir-btn'+(_liked?' on':'')+'" onclick="toggleCurtir(\''+_k+'\')">'+icon('heart')+' '+(_liked?'Curtido':'Curtir')+(_cnt?' \u00b7 '+_cnt:'')+'</button>';
+      h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div>'+selo+'</div><div class="card-text expanded">'+_avisoHTML(a.texto)+'</div><div class="aviso-foot"><div class="aviso-autor">'+escH(a.autor||'')+(isHub?' \u00b7 via HUB':'')+'</div><div class="aviso-acts">'+_quemChip+_curtirBtn+acoes+'</div></div></div>';
     });
     h+='</div>';
     area.innerHTML=h;
