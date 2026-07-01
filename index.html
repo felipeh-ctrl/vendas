@@ -437,6 +437,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .home-sec{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:2px 2px 7px}
 .home-sec.novo-sec{color:var(--accent)}
 .home-sec.lido-sec{color:var(--text3);margin-top:14px}
+/* Recolhida (mapa) */
+.rec-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.rec-tab{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .15s}
+.rec-tab:hover{border-color:var(--accent);color:var(--orange-l)}
+.rec-tab.on{background:var(--accent);border-color:var(--accent);color:#080808}
+.rec-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.rec-search .ic{color:var(--text3)}
+.rec-search input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:var(--font)}
+.rec-wrap{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+.rec-map{height:520px;border-radius:14px;border:1px solid var(--border);overflow:hidden;z-index:0}
+.rec-list{max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.rec-count{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:2px 2px 4px}
+.rec-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s}
+.rec-item:hover{border-color:var(--accent);background:var(--surface2)}
+.rec-item-nome{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.rec-item-zona{font-size:11px;color:var(--accent);margin-top:3px;margin-left:20px;font-weight:600}
+@media(max-width:760px){.rec-wrap{grid-template-columns:1fr}.rec-map{height:380px}.rec-list{max-height:320px}}
 .papel-vendedor{background:rgba(59,130,246,.15);color:var(--blue-l)}
 .papel-espectador{background:var(--surface3);color:var(--text3)}
 .st-inativo{color:var(--text3)}
@@ -858,6 +875,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
       <div class="view" id="view-usuarios"></div>
       <div class="view" id="view-faq"></div>
       <div class="view" id="view-ferramentas"></div>
+      <div class="view" id="view-recolhida"></div>
     </div>
   </div>
 </div>
@@ -1058,7 +1076,7 @@ async function fazerLogin(){
   }catch(ex){ err.textContent='Erro: '+(ex.message||ex); btn.disabled=false; }
 }
 
-var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',ferramentas:'Ferramentas',repo:'Repositório',usuarios:'Usuários'};
+var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',recolhida:'Recolhida',ferramentas:'Ferramentas',repo:'Repositório',usuarios:'Usuários'};
 function setAreaTitle(v){ var el=document.getElementById('areaTitle'); if(el) el.textContent=AREA_TITULOS[v]||''; }
 var _areaClockTimer=null;
 function startAreaClock(){ if(_areaClockTimer) return; var tick=function(){ var el=document.getElementById('areaClockT'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }; tick(); _areaClockTimer=setInterval(tick,1000); }
@@ -1136,6 +1154,7 @@ function renderNav(){
   h+='<button class="nav-item'+(currentView==='destinos'?' active':'')+'" onclick="irView(\'destinos\')">'+icon('mountain')+' Destinos Operados</button>';
   h+='<button class="nav-item'+(currentView==='tours'?' active':'')+'" onclick="irView(\'tours\')">'+icon('route')+' Links dos Tours</button>';
   h+='<button class="nav-item'+(currentView==='postos'?' active':'')+'" onclick="irView(\'postos\')">'+icon('shield')+' Postos Médicos</button>';
+  h+='<button class="nav-item'+(currentView==='recolhida'?' active':'')+'" onclick="irView(\'recolhida\')">'+icon('map-pin')+' Recolhida</button>';
   h+='<div class="nav-section">Recursos</div>';
   h+='<button class="nav-item'+(currentView==='ferramentas'?' active':'')+'" onclick="irView(\'ferramentas\')">'+icon('link')+' Ferramentas</button>';
   h+='<button class="nav-item'+(currentView==='repo'?' active':'')+'" onclick="irView(\'repo\')">'+icon('folder')+' Repositório</button>';
@@ -1156,6 +1175,7 @@ function irView(v){
   if(v==='destinos') carregarDestinos();
   if(v==='tours') carregarToursValores();
   if(v==='postos') carregarPostos();
+  if(v==='recolhida') carregarRecolhida();
   if(v==='ferramentas') carregarFerramentas();
   if(v==='repo') carregarRepo();
   if(v==='usuarios') carregarUsuarios();
@@ -1363,6 +1383,88 @@ function _copiarTexto(txt,btn){
     setTimeout(function(){ btn.innerHTML=o; btn.classList.remove('copied'); },1600);
     showToast('Número copiado!');
   }).catch(function(){ showToast('Não foi possível copiar.'); });
+}
+// ---------- RECOLHIDA (mapa Leaflet a partir do My Maps via Edge Function) ----------
+var RECOLHIDA_MAPS={
+  spa:{nome:'San Pedro',mid:'1rM0nUpSAq0QsjKRUxi14jAWLpPp3GKU',center:[-22.9098,-68.2020],zoom:14},
+  stgo:{nome:'Santiago',mid:'1YAgvrnTdnFpDQWyn-Eb0i_BdAsfUVaw',center:[-33.4180,-70.6000],zoom:12}
+};
+var _recAtual='spa', _recCache={}, _recMap=null, _recData=null, _recMarkers={};
+function carregarRecolhida(){
+  var area=document.getElementById('view-recolhida'); if(!area) return;
+  var tabs=''; Object.keys(RECOLHIDA_MAPS).forEach(function(k){ tabs+='<button class="rec-tab'+(k===_recAtual?' on':'')+'" onclick="_recTrocar(\''+k+'\')">'+escH(RECOLHIDA_MAPS[k].nome)+'</button>'; });
+  var h='<div style="max-width:1000px;margin:0 auto">';
+  h+='<div class="rec-tabs">'+tabs+'</div>';
+  h+='<div class="rec-search">'+icon('search',16)+'<input id="rec-busca" placeholder="Buscar hotel, rua ou ponto…" oninput="_recBuscar()" autocomplete="off"></div>';
+  h+='<div class="rec-wrap"><div id="rec-map" class="rec-map"></div><div id="rec-list" class="rec-list"></div></div>';
+  h+='</div>';
+  area.innerHTML=h;
+  _recRender();
+}
+function _recTrocar(k){ if(_recAtual===k) return; _recAtual=k; carregarRecolhida(); }
+async function _recRender(){
+  var mapEl=document.getElementById('rec-map'), listEl=document.getElementById('rec-list'); if(!mapEl) return;
+  listEl.innerHTML='<div class="loading" style="padding:14px">Carregando mapa…</div>';
+  await _destLoadLeaflet();
+  var cfg=RECOLHIDA_MAPS[_recAtual];
+  var data=_recCache[_recAtual];
+  if(!data){
+    try{ var res=await callEdge('recolhida-kml',{mid:cfg.mid}); data=_kmlParse(res.kml||''); _recCache[_recAtual]=data; }
+    catch(ex){ listEl.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text3)">Não consegui carregar o mapa.<br><span style="color:var(--red-l)">'+escH(ex.message||ex)+'</span><br><br>Confirme se a Edge Function <b>recolhida-kml</b> está publicada no Supabase.</div>'; return; }
+  }
+  _recData=data;
+  if(_recMap){ try{ _recMap.remove(); }catch(e){} _recMap=null; }
+  _recMap=L.map('rec-map',{zoomControl:true,scrollWheelZoom:false}).setView(cfg.center,cfg.zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(_recMap);
+  _recMarkers={};
+  var bounds=[]; var pal=['#22c55e','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#f97316','#06b6d4','#ec4899'];
+  data.polygons.forEach(function(pz,idx){
+    var col=pal[idx%pal.length];
+    try{ var poly=L.polygon(pz.ring,{color:col,weight:2,fillColor:col,fillOpacity:.12}).addTo(_recMap); poly.bindPopup('<b>'+escH(pz.name||pz.layer||'Zona')+'</b>'); }catch(e){}
+    pz.ring.forEach(function(pt){ bounds.push(pt); });
+  });
+  data.points.forEach(function(p,idx){
+    p._zona=_recZonaDe(p.lat,p.lng);
+    var mk=L.marker([p.lat,p.lng]).addTo(_recMap);
+    mk.bindPopup('<b>'+escH(p.name||'Ponto')+'</b>'+(p._zona?'<br><span style="color:#cf6514;font-weight:700">Recolhida: '+escH(p._zona)+'</span>':'')+(p.desc?'<br><span style="font-size:12px;color:#555">'+escH(_recDescTxt(p.desc))+'</span>':''));
+    _recMarkers[idx]=mk; bounds.push([p.lat,p.lng]);
+  });
+  if(bounds.length){ try{ _recMap.fitBounds(bounds,{padding:[30,30],maxZoom:15}); }catch(e){} }
+  setTimeout(function(){ if(_recMap) _recMap.invalidateSize(); },200);
+  _recBuscar();
+}
+function _recZonaDe(lat,lng){ if(!_recData) return ''; for(var i=0;i<_recData.polygons.length;i++){ if(_pointInPoly(lat,lng,_recData.polygons[i].ring)) return _recData.polygons[i].name||_recData.polygons[i].layer||''; } return ''; }
+function _recNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function _recDescTxt(d){ return String(d||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,180); }
+function _recBuscar(){
+  var listEl=document.getElementById('rec-list'); if(!listEl||!_recData) return;
+  var el=document.getElementById('rec-busca'); var q=_recNorm(el?el.value:'');
+  var pts=_recData.points.map(function(p,idx){ return {p:p,idx:idx}; });
+  var filtered=q?pts.filter(function(o){ return _recNorm(o.p.name).indexOf(q)>=0 || _recNorm(o.p.desc).indexOf(q)>=0 || _recNorm(o.p._zona).indexOf(q)>=0; }):pts;
+  if(!filtered.length){ listEl.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text3)">Nenhum ponto encontrado.</div>'; return; }
+  var h='<div class="rec-count">'+filtered.length+' ponto'+(filtered.length>1?'s':'')+'</div>';
+  filtered.slice(0,300).forEach(function(o){ h+='<div class="rec-item" onclick="_recIr('+o.idx+')"><div class="rec-item-nome">'+icon('map-pin',14)+' '+escH(o.p.name||'Ponto')+'</div>'+(o.p._zona?'<div class="rec-item-zona">'+escH(o.p._zona)+'</div>':'')+'</div>'; });
+  listEl.innerHTML=h;
+}
+function _recIr(idx){ var p=_recData&&_recData.points[idx], mk=_recMarkers[idx]; if(!p||!mk||!_recMap) return; _recMap.flyTo([p.lat,p.lng],16,{duration:.6}); setTimeout(function(){ try{ mk.openPopup(); }catch(e){} },650); }
+function _pointInPoly(lat,lng,ring){ var inside=false; for(var i=0,j=ring.length-1;i<ring.length;j=i++){ var yi=ring[i][0],xi=ring[i][1],yj=ring[j][0],xj=ring[j][1]; var hit=((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/((yj-yi)||1e-12)+xi); if(hit) inside=!inside; } return inside; }
+function _kmlParse(kmlText){
+  var out={points:[],polygons:[]};
+  if(!kmlText) return out;
+  var doc; try{ doc=new DOMParser().parseFromString(kmlText,'text/xml'); }catch(e){ return out; }
+  var pms=doc.getElementsByTagName('Placemark');
+  for(var i=0;i<pms.length;i++){
+    var pm=pms[i];
+    var nEl=pm.getElementsByTagName('name')[0]; var name=nEl?(nEl.textContent||'').trim():'';
+    var dEl=pm.getElementsByTagName('description')[0]; var desc=dEl?(dEl.textContent||'').trim():'';
+    var layer=''; var par=pm.parentNode;
+    while(par && par.nodeName){ if(par.nodeName==='Folder'){ var fn=par.getElementsByTagName('name')[0]; layer=fn?(fn.textContent||'').trim():''; break; } if(par.nodeName==='kml'||par.nodeName==='Document') break; par=par.parentNode; }
+    var ptEl=pm.getElementsByTagName('Point')[0];
+    if(ptEl){ var pc=ptEl.getElementsByTagName('coordinates')[0]; if(pc){ var a=(pc.textContent||'').trim().split(','); var lng=parseFloat(a[0]), lat=parseFloat(a[1]); if(!isNaN(lat)&&!isNaN(lng)) out.points.push({name:name,desc:desc,layer:layer,lat:lat,lng:lng,_zona:''}); } continue; }
+    var pgEl=pm.getElementsByTagName('Polygon')[0];
+    if(pgEl){ var cc=pgEl.getElementsByTagName('coordinates')[0]; if(cc){ var ring=(cc.textContent||'').trim().split(/\s+/).map(function(tok){ var b=tok.split(','); return [parseFloat(b[1]),parseFloat(b[0])]; }).filter(function(z){ return !isNaN(z[0])&&!isNaN(z[1]); }); if(ring.length>=3) out.polygons.push({name:name||layer,desc:desc,layer:layer,ring:ring}); } continue; }
+  }
+  return out;
 }
 function carregarFerramentas(){
   var area=document.getElementById('view-ferramentas'); if(!area) return;
