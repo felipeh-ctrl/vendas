@@ -1364,7 +1364,17 @@ function carregarFerramentas(){
     {ic:'tag',nome:'Taxas para Parcelamento',desc:'Passo a passo',url:'https://docs.google.com/document/d/1FizyYOeP1VLPHLGuV-pEu-HXqrDzDi__WM9lg9-7oCo/edit?tab=t.0'},
     {ic:'clipboard-list',nome:'Catálogos de Passeios',desc:'',url:'https://fuigosteitrips.com.br/lps/catalogos/'},
     {ic:'shield',nome:'Política de Cancelamento',desc:'',url:'https://drive.google.com/drive/folders/1wtOWf7_lmjSQpLyKHQkedFUx2-OwIv6h'},
-    {ic:'file-spreadsheet',nome:'ORCA 6.6',desc:'Privados',url:'https://docs.google.com/spreadsheets/d/11TRAb7DdBChUxgsk6MHkwvva_gT6ZUuSdfGUzRF0wys/edit?pli=1&gid=360811353#gid=360811353'}
+    {ic:'file-spreadsheet',nome:'ORCA 6.6',desc:'Privados',url:'https://docs.google.com/spreadsheets/d/11TRAb7DdBChUxgsk6MHkwvva_gT6ZUuSdfGUzRF0wys/edit?pli=1&gid=360811353#gid=360811353'},
+    {ic:'moon',nome:'Fases da Lua - Atacama',desc:'Calendário lunar (San Pedro)',url:'https://www.timeanddate.com/moon/phases/chile/san-pedro-de-atacama'}
+  ];
+  var pagamentos=[
+    {ic:'banknote',nome:'Nautt',desc:'Link de PIX',url:'https://painel.nautt.finance/ponto-de-venda/90'},
+    {ic:'credit-card',nome:'Pagar.me',desc:'Link de cartão de crédito',url:'https://id.pagar.me/signin'},
+    {ic:'shield',nome:'Linkka',desc:'Seguro saúde/viagem',url:'https://www.linkkaseguro.com.br/linkka/inicio'}
+  ];
+  var devolucoes=[
+    {ic:'file-text',nome:'Solicitação de Devoluções',desc:'Formulário Google',url:'https://docs.google.com/forms/d/e/1FAIpQLSc9aTZxoQMzOkzHNkDDPaYzOGURgE0SUjdCcrUNoxCwuOik7A/viewform'},
+    {ic:'file-spreadsheet',nome:'Devoluções',desc:'Planilha para preencher',url:'https://docs.google.com/spreadsheets/d/1IwIPxNarAe9ot2U3jT70X5OuIDnfYv0LcZWn-OyUpLY/edit?gid=1527462407#gid=1527462407'}
   ];
   var card=function(x){ return '<a class="fer-card" href="'+_attrEsc(x.url)+'" target="_blank" rel="noopener"><span class="fer-ic">'+icon(x.ic,18)+'</span><span class="fer-info"><span class="fer-name">'+escH(x.nome)+'</span>'+(x.desc?('<span class="fer-desc">'+escH(x.desc)+'</span>'):'')+'</span><span class="fer-arrow">'+icon('external-link',15)+'</span></a>'; };
   var sec=function(icn,titulo,itens){ return '<div class="fer-sec"><div class="fer-sec-title">'+icon(icn,16)+' '+escH(titulo)+'</div><div class="fer-grid">'+itens.map(card).join('')+'</div></div>'; };
@@ -1372,6 +1382,8 @@ function carregarFerramentas(){
   h+='<p style="color:var(--text3);font-size:13px;margin:0 0 20px">Acesso rápido a sistemas, ferramentas e parceiros.</p>';
   h+=sec('settings','Sistemas Internos',sistemas);
   h+=sec('credit-card','Ferramentas de Venda',ferramentas);
+  h+=sec('banknote','Pagamentos',pagamentos);
+  h+=sec('download','Devoluções',devolucoes);
   h+='<div class="fer-sec"><div class="fer-sec-title">'+icon('briefcase',16)+' Parceiros</div><div class="fer-grid">';
   h+='<div class="fer-card fer-tel"><span class="fer-ic">'+icon('plane',18)+'</span><span class="fer-info"><span class="fer-name">Kurti Trips</span><span class="fer-desc">Outros destinos e passagens · +55 21 99659-0350</span></span></div>';
   h+='</div></div></div>';
