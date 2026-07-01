@@ -214,6 +214,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .fer-desc{font-size:.75rem;color:var(--text3)}
 .fer-arrow{color:var(--text3);flex-shrink:0}
 .fer-card:hover .fer-arrow{color:var(--accent)}
+.fer-tel-num{font-size:13px;font-weight:800;color:var(--accent);margin-top:3px;letter-spacing:.02em}
+.fer-copy{display:inline-flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:7px 12px;border-radius:9px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;flex-shrink:0;transition:all .15s}
+.fer-copy:hover{border-color:var(--accent);color:var(--orange-l)}
+.fer-copy.copied{border-color:var(--accent);color:var(--accent);background:rgba(207,101,20,.14)}
 /* Meu perfil */
 .perfil-avatar-prev{width:88px;height:88px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;background-size:cover;background-position:center;box-shadow:0 0 0 3px var(--surface2),0 0 0 4px var(--border2)}
 /* Modal de aniversário */
@@ -538,6 +542,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol>
 <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
 <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.5 4.04 3 5.5l7 7Z" /></symbol>
+<symbol id="ic-play" viewBox="0 0 24 24"><path d="M6 3v18l15-9Z" /></symbol>
 <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18 6 6 18" />
   <path d="m6 6 12 12" /></symbol>
 <symbol id="ic-plane" viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" /></symbol>
@@ -1352,6 +1357,13 @@ function abrirTrocarSenha(){ document.getElementById('novaSenha').value=''; docu
 function _iniciais(nome){ return (nome||'?').trim().split(/\s+/).map(function(x){return x[0];}).slice(0,2).join('').toUpperCase(); }
 
 // ---------- FERRAMENTAS (Links Úteis) ----------
+function _copiarTexto(txt,btn){
+  navigator.clipboard.writeText(txt).then(function(){
+    var o=btn.innerHTML; btn.innerHTML=icon('check',14)+' Copiado'; btn.classList.add('copied');
+    setTimeout(function(){ btn.innerHTML=o; btn.classList.remove('copied'); },1600);
+    showToast('Número copiado!');
+  }).catch(function(){ showToast('Não foi possível copiar.'); });
+}
 function carregarFerramentas(){
   var area=document.getElementById('view-ferramentas'); if(!area) return;
   var sistemas=[
@@ -1365,7 +1377,7 @@ function carregarFerramentas(){
     {ic:'clipboard-list',nome:'Catálogos de Passeios',desc:'',url:'https://fuigosteitrips.com.br/lps/catalogos/'},
     {ic:'shield',nome:'Política de Cancelamento',desc:'',url:'https://drive.google.com/drive/folders/1wtOWf7_lmjSQpLyKHQkedFUx2-OwIv6h'},
     {ic:'file-spreadsheet',nome:'ORCA 6.6',desc:'Privados',url:'https://docs.google.com/spreadsheets/d/11TRAb7DdBChUxgsk6MHkwvva_gT6ZUuSdfGUzRF0wys/edit?pli=1&gid=360811353#gid=360811353'},
-    {ic:'moon',nome:'Fases da Lua - Atacama',desc:'Calendário lunar (San Pedro)',url:'https://www.timeanddate.com/moon/phases/chile/san-pedro-de-atacama'}
+    {ic:'moon',nome:'Fases da Lua - Atacama',desc:'Calendário lunar (San Pedro)',url:'https://pt.tutiempo.net/san-pedro-de-atacama.html?dados=calendario#cal'}
   ];
   var pagamentos=[
     {ic:'banknote',nome:'Nautt',desc:'Link de PIX',url:'https://painel.nautt.finance/ponto-de-venda/90'},
@@ -1376,6 +1388,12 @@ function carregarFerramentas(){
     {ic:'file-text',nome:'Solicitação de Devoluções',desc:'Formulário Google',url:'https://docs.google.com/forms/d/e/1FAIpQLSc9aTZxoQMzOkzHNkDDPaYzOGURgE0SUjdCcrUNoxCwuOik7A/viewform'},
     {ic:'file-spreadsheet',nome:'Devoluções',desc:'Planilha para preencher',url:'https://docs.google.com/spreadsheets/d/1IwIPxNarAe9ot2U3jT70X5OuIDnfYv0LcZWn-OyUpLY/edit?gid=1527462407#gid=1527462407'}
   ];
+  var siteredes=[
+    {ic:'globe',nome:'Site FGT',desc:'fuigosteitrips.com.br',url:'https://fuigosteitrips.com.br'},
+    {ic:'pencil',nome:'Blog',desc:'Artigos e dicas de viagem',url:'https://fuigosteitrips.com.br/blog'},
+    {ic:'image',nome:'Instagram',desc:'@fuigosteitrips',url:'https://www.instagram.com/fuigosteitrips'},
+    {ic:'play',nome:'YouTube',desc:'@fuigosteitrips',url:'https://www.youtube.com/@fuigosteitrips'}
+  ];
   var card=function(x){ return '<a class="fer-card" href="'+_attrEsc(x.url)+'" target="_blank" rel="noopener"><span class="fer-ic">'+icon(x.ic,18)+'</span><span class="fer-info"><span class="fer-name">'+escH(x.nome)+'</span>'+(x.desc?('<span class="fer-desc">'+escH(x.desc)+'</span>'):'')+'</span><span class="fer-arrow">'+icon('external-link',15)+'</span></a>'; };
   var sec=function(icn,titulo,itens){ return '<div class="fer-sec"><div class="fer-sec-title">'+icon(icn,16)+' '+escH(titulo)+'</div><div class="fer-grid">'+itens.map(card).join('')+'</div></div>'; };
   var h='<div style="max-width:900px;margin:0 auto">';
@@ -1384,8 +1402,9 @@ function carregarFerramentas(){
   h+=sec('credit-card','Ferramentas de Venda',ferramentas);
   h+=sec('banknote','Pagamentos',pagamentos);
   h+=sec('download','Devoluções',devolucoes);
+  h+=sec('globe','Site e Redes Sociais',siteredes);
   h+='<div class="fer-sec"><div class="fer-sec-title">'+icon('briefcase',16)+' Parceiros</div><div class="fer-grid">';
-  h+='<div class="fer-card fer-tel"><span class="fer-ic">'+icon('plane',18)+'</span><span class="fer-info"><span class="fer-name">Kurti Trips</span><span class="fer-desc">Outros destinos e passagens · +55 21 99659-0350</span></span></div>';
+  h+='<div class="fer-card fer-tel"><span class="fer-ic">'+icon('plane',18)+'</span><span class="fer-info"><span class="fer-name">Kurti Trips</span><span class="fer-desc">Outros destinos e passagens</span><span class="fer-tel-num">+55 21 99659-0350</span></span><button class="fer-copy" onclick="_copiarTexto(\'+55 21 99659-0350\',this)">'+icon('copy',14)+' Copiar</button></div>';
   h+='</div></div></div>';
   area.innerHTML=h;
 }
