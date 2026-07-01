@@ -710,6 +710,10 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
 <symbol id="ic-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" />
   <path d="m12 5 7 7-7 7" /></symbol>
 <symbol id="ic-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M5 12h14" />
+  <path d="M12 5v14" /></symbol>
+<symbol id="ic-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
+  <path d="m21.854 2.147-10.94 10.939" /></symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -778,6 +782,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
       <div class="view" id="view-postos"></div>
       <div class="view" id="view-repo"></div>
       <div class="view" id="view-usuarios"></div>
+      <div class="view" id="view-faq"></div>
     </div>
   </div>
 </div>
@@ -847,6 +852,22 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalConf')">Cancelar</button><button class="btn-confirm-delete" onclick="_confExec()">Confirmar</button></div>
 </div></div>
 
+
+<div class="modal-overlay" id="modalFaq"><div class="modal" style="max-width:560px">
+  <h2 style="display:flex;align-items:center;gap:8px"><span class="ic"><svg><use href="#ic-circle-help"/></svg></span> <span id="faqModalTitle">Novo tópico</span></h2>
+  <div class="form-group"><label>Categoria</label><select id="faq-m-cat"><option value="atendimento">Atendimento</option><option value="programacao">Programação</option><option value="alteracao_dados">Alteração de Dados</option><option value="operacional">Operacional</option><option value="destinos">Destinos</option><option value="financeiro">Financeiro</option></select></div>
+  <div class="form-group"><label>Pergunta</label><input id="faq-m-q" placeholder="Qual é a dúvida?"></div>
+  <div class="form-group"><label>Resposta</label><textarea id="faq-m-a" placeholder="Resposta clara e objetiva (aceita quebras de linha)"></textarea></div>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalFaq')">Cancelar</button><button class="btn-modal-save" onclick="salvarFaq()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="modalSug"><div class="modal" style="max-width:520px">
+  <h2 style="display:flex;align-items:center;gap:8px"><span class="ic"><svg><use href="#ic-messages-square"/></svg></span> Responder dúvida</h2>
+  <div id="sug-preview" style="font-size:13px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px"></div>
+  <div class="form-group"><label>Categoria</label><select id="sug-m-cat"><option value="atendimento">Atendimento</option><option value="programacao">Programação</option><option value="alteracao_dados">Alteração de Dados</option><option value="operacional">Operacional</option><option value="destinos">Destinos</option><option value="financeiro">Financeiro</option></select></div>
+  <div class="form-group"><label>Resposta</label><textarea id="sug-m-resp" placeholder="Escreva a resposta..."></textarea></div>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalSug')">Cancelar</button><button class="btn-modal-cancel" onclick="responderSugestao(false)">Só responder</button><button class="btn-modal-save" onclick="responderSugestao(true)">Responder + add ao FAQ</button></div>
+</div></div>
 
 <div class="modal-overlay" id="modalRepo"><div class="modal" style="max-width:520px">
   <h2 id="repoTit">Novo item</h2>
@@ -922,7 +943,7 @@ async function fazerLogin(){
   }catch(ex){ err.textContent='Erro: '+(ex.message||ex); btn.disabled=false; }
 }
 
-var AREA_TITULOS={templates:'Templates',avisos:'Avisos',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',repo:'Repositório',usuarios:'Usuários'};
+var AREA_TITULOS={templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',repo:'Repositório',usuarios:'Usuários'};
 function setAreaTitle(v){ var el=document.getElementById('areaTitle'); if(el) el.textContent=AREA_TITULOS[v]||''; }
 var _areaClockTimer=null;
 function startAreaClock(){ if(_areaClockTimer) return; var tick=function(){ var el=document.getElementById('areaClockT'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }; tick(); _areaClockTimer=setInterval(tick,1000); }
@@ -991,6 +1012,7 @@ function renderNav(){
   h+='<div class="nav-section">Principal</div>';
   h+='<button class="nav-item'+(currentView==='templates'?' active':'')+'" onclick="irTemplates(null,null)">'+icon('layout-grid')+' Templates</button>';
   h+='<button class="nav-item'+(currentView==='avisos'?' active':'')+'" onclick="irView(\'avisos\')">'+icon('bell')+' Avisos</button>';
+  h+='<button class="nav-item'+(currentView==='faq'?' active':'')+'" onclick="irView(\'faq\')">'+icon('circle-help')+' FAQ</button>';
   h+='<div class="nav-section">Consulta (HUB)</div>';
   h+='<button class="nav-item'+(currentView==='destinos'?' active':'')+'" onclick="irView(\'destinos\')">'+icon('mountain')+' Destinos Operados</button>';
   h+='<button class="nav-item'+(currentView==='tours'?' active':'')+'" onclick="irView(\'tours\')">'+icon('route')+' Links dos Tours</button>';
@@ -1009,6 +1031,7 @@ function irView(v){
   document.getElementById('view-'+v).classList.add('active');
   fecharSidebar(); renderNav();
   if(v==='avisos') carregarAvisos();
+  if(v==='faq') carregarFaq();
   if(v==='destinos') carregarDestinos();
   if(v==='tours') carregarToursValores();
   if(v==='postos') carregarPostos();
@@ -1513,6 +1536,172 @@ function _tourCardHTML(r){
   if(ft) c+='<div class="tt-foot">'+ft+'</div>';
   c+='</div>';
   return c;
+}
+
+// ===================== FAQ (portado do HUB) =====================
+var FAQ_CATS={
+  atendimento:{label:'Atendimento',cor:'#4f9fe0'},
+  programacao:{label:'Programação',cor:'#7cc242'},
+  alteracao_dados:{label:'Alteração de Dados',cor:'#a78bfa'},
+  operacional:{label:'Operacional',cor:'#ed9b4b'},
+  destinos:{label:'Destinos',cor:'#22d3ee'},
+  financeiro:{label:'Financeiro',cor:'#f87171'}
+};
+var _faqData=[], _faqSugs=[], _faqCat='all', _faqOpen={}, _faqEditId=null, _sugOpen={}, _sugRespId=null;
+
+async function carregarFaq(){
+  var area=document.getElementById('view-faq');
+  area.innerHTML='<div class="loading">Carregando FAQ...</div>';
+  var r1=await sb.from('faq_vendas').select('*').order('categoria',{ascending:true});
+  if(r1.error){ area.innerHTML='<div class="embreve">'+icon('circle-help')+'<h3>Erro ao carregar</h3><p>'+escH(r1.error.message)+'</p></div>'; return; }
+  var r2=await sb.from('faq_sugestoes_vendas').select('*').order('created_at',{ascending:false});
+  _faqData=r1.data||[]; _faqSugs=(r2&&r2.data)||[];
+  area.innerHTML=''
+    +'<div class="view-toolbar">'+(isAdmin()?('<button class="btn-novo" onclick="abrirFaqModal()">'+icon('plus')+' Novo tópico</button>'):'')+'</div>'
+    +'<div class="hero"><div class="hero-search"><span class="ic"><svg><use href="#ic-search"/></svg></span><input id="faq-busca" placeholder="Buscar na FAQ..." oninput="renderFaq()"></div></div>'
+    +'<div id="faq-cats" style="display:flex;gap:8px;flex-wrap:wrap;max-width:900px;margin:0 auto 14px"></div>'
+    +'<div id="faq-list" style="max-width:900px;margin:0 auto"></div>'
+    +'<div style="max-width:900px;margin:26px auto 0;border-top:1px solid var(--border);padding-top:18px">'
+      +'<div style="font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px">'+icon('messages-square')+' Não achou? Envie sua dúvida</div>'
+      +'<div style="display:flex;gap:8px;margin-bottom:16px"><input id="sug-input" placeholder="Escreva sua pergunta para os admins..." onkeydown="if(event.key===\'Enter\')enviarSugestao()" style="flex:1;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);outline:none"><button class="btn-novo" onclick="enviarSugestao()">'+icon('send')+' Enviar</button></div>'
+      +'<div id="faq-sug-list"></div>'
+    +'</div>';
+  renderFaq(); renderSugestoes();
+}
+
+function _faqChip(active,cor){
+  if(active&&cor) return 'padding:5px 14px;border-radius:20px;border:1px solid '+cor+';font-size:13px;cursor:pointer;background:'+cor+'26;color:'+cor+';font-weight:700;font-family:var(--font)';
+  if(active) return 'padding:5px 14px;border-radius:20px;border:none;font-size:13px;cursor:pointer;background:var(--accent);color:#080808;font-weight:700;font-family:var(--font)';
+  return 'padding:5px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--surface);color:var(--text2);font-family:var(--font)';
+}
+function setFaqCat(c){ _faqCat=c; renderFaq(); }
+function faqToggle(id){ if(_faqOpen[id]) delete _faqOpen[id]; else _faqOpen[id]=1; renderFaq(); }
+
+function renderFaq(){
+  var bel=document.getElementById('faq-busca'); var q=(bel&&bel.value||'').toLowerCase();
+  var catEl=document.getElementById('faq-cats'); if(!catEl) return;
+  var ch='<button onclick="setFaqCat(\'all\')" style="'+_faqChip(_faqCat==='all')+'">Todos ('+_faqData.length+')</button>';
+  Object.keys(FAQ_CATS).forEach(function(k){ var v=FAQ_CATS[k]; var c=_faqData.filter(function(f){return f.categoria===k;}).length; if(!c) return; ch+='<button onclick="setFaqCat(\''+k+'\')" style="'+_faqChip(_faqCat===k,v.cor)+'">'+escH(v.label)+' <span style="opacity:.7">'+c+'</span></button>'; });
+  catEl.innerHTML=ch;
+  var filt=_faqData.filter(function(f){ if(_faqCat!=='all'&&f.categoria!==_faqCat) return false; if(q && String(f.pergunta||'').toLowerCase().indexOf(q)<0 && String(f.resposta||'').toLowerCase().indexOf(q)<0) return false; return true; });
+  var listEl=document.getElementById('faq-list'); if(!listEl) return;
+  if(!filt.length){ listEl.innerHTML='<div class="embreve">'+icon('circle-help')+'<h3>Nada encontrado</h3><p>Nenhuma pergunta nessa busca ou categoria.</p></div>'; return; }
+  var groups={}; filt.forEach(function(f){ (groups[f.categoria]=groups[f.categoria]||[]).push(f); });
+  var h=''; var adm=isAdmin();
+  Object.keys(groups).forEach(function(cat){
+    var v=FAQ_CATS[cat]||{label:cat,cor:'#888'};
+    if(_faqCat==='all') h+='<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin:18px 0 8px 2px">'+escH(v.label)+'</div>';
+    groups[cat].forEach(function(f){
+      var open=!!_faqOpen[f.id]; var ans=escH(f.resposta||'').replace(/\n/g,'<br>');
+      h+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;overflow:hidden">'
+        +'<div onclick="faqToggle('+f.id+')" style="display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer">'
+        +'<span style="flex:1;font-size:14px;font-weight:700;color:var(--text)">'+escH(f.pergunta||'')+'</span>'
+        +'<span style="font-size:11px;padding:2px 10px;border-radius:20px;font-weight:700;background:'+v.cor+'26;color:'+v.cor+';white-space:nowrap;flex-shrink:0">'+escH(v.label)+'</span>'
+        +'<span class="ic" style="font-size:14px;color:var(--text3);transition:transform .2s;transform:'+(open?'rotate(90deg)':'none')+'"><svg><use href="#ic-chevron-right"/></svg></span></div>'
+        +(open?('<div style="padding:0 16px 14px;font-size:14px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border)"><p style="margin-top:10px">'+ans+'</p>'
+          +(adm?('<div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)"><button onclick="event.stopPropagation();abrirFaqModal('+f.id+')" style="padding:5px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--text2);font-family:var(--font)">'+icon('pencil')+' Editar</button><button onclick="event.stopPropagation();deletarFaq('+f.id+')" style="padding:5px 14px;border:1px solid #f87171;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:#f87171;font-family:var(--font)">'+icon('trash-2')+' Excluir</button></div>'):'')
+          +'</div>'):'')
+        +'</div>';
+    });
+  });
+  listEl.innerHTML=h;
+}
+
+function renderSugestoes(){
+  var el=document.getElementById('faq-sug-list'); if(!el) return;
+  var adm=isAdmin();
+  var pend=_faqSugs.filter(function(s){return !s.respondido;});
+  var resp=_faqSugs.filter(function(s){return s.respondido;});
+  var h='';
+  if(pend.length){ h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:4px 0 6px">Pendentes ('+pend.length+')</div>'; pend.forEach(function(s){ h+=_sugCard(s,adm); }); }
+  if(resp.length){ h+='<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px">Respondidas ('+resp.length+')</div>'; resp.forEach(function(s){ h+=_sugCard(s,adm); }); }
+  if(!pend.length&&!resp.length) h='<div style="font-size:13px;color:var(--text3)">Nenhuma dúvida enviada ainda.</div>';
+  el.innerHTML=h;
+}
+function _sugToggle(id){ if(_sugOpen[id]) delete _sugOpen[id]; else _sugOpen[id]=1; renderSugestoes(); }
+function _sugCard(s,adm){
+  var open=!!_sugOpen[s.id]; var done=!!s.respondido;
+  var badgeCor=done?'#7cc242':'#ed9b4b';
+  return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px">'
+    +'<div onclick="_sugToggle('+s.id+')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer">'
+    +'<span class="ic" style="font-size:13px;color:var(--text3);transition:transform .2s;transform:'+(open?'rotate(90deg)':'none')+'"><svg><use href="#ic-chevron-right"/></svg></span>'
+    +'<div style="flex:1;font-size:13px;font-weight:700;color:var(--text)">'+escH(s.pergunta||'')+'</div>'
+    +'<span style="font-size:11px;padding:2px 9px;border-radius:20px;font-weight:700;background:'+badgeCor+'26;color:'+badgeCor+';white-space:nowrap">'+(done?'Respondida':'Pendente')+'</span></div>'
+    +(open?('<div style="padding:0 14px 12px;border-top:1px solid var(--border)"><div style="font-size:11px;color:var(--text3);padding:8px 0 6px">Por '+escH(s.created_by||'—')+'</div>'
+      +(done&&s.resposta?('<div style="padding:8px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);font-size:13px;color:var(--text2);line-height:1.6">'+escH(s.resposta).replace(/\n/g,'<br>')+'</div>'):'<div style="font-size:13px;color:var(--text3);font-style:italic">Ainda sem resposta.</div>')
+      +(adm?('<div style="display:flex;gap:6px;margin-top:10px"><button onclick="event.stopPropagation();abrirSugModal('+s.id+')" style="padding:5px 14px;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--text2);font-family:var(--font)">'+icon('messages-square')+' '+(done?'Editar resposta':'Responder')+'</button><button onclick="event.stopPropagation();deletarSugestao('+s.id+')" style="padding:5px 14px;border:1px solid #f87171;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:#f87171;font-family:var(--font)">'+icon('trash-2')+' Excluir</button></div>'):'')
+      +'</div>'):'')
+    +'</div>';
+}
+
+function abrirFaqModal(id){
+  _faqEditId=id||null;
+  document.getElementById('faqModalTitle').textContent=id?'Editar tópico':'Novo tópico';
+  var f=id?_faqData.find(function(x){return x.id===id;}):null;
+  document.getElementById('faq-m-cat').value=f?f.categoria:'atendimento';
+  document.getElementById('faq-m-q').value=f?(f.pergunta||''):'';
+  document.getElementById('faq-m-a').value=f?(f.resposta||''):'';
+  document.getElementById('modalFaq').classList.add('open');
+}
+async function salvarFaq(){
+  var cat=document.getElementById('faq-m-cat').value;
+  var q=document.getElementById('faq-m-q').value.trim();
+  var a=document.getElementById('faq-m-a').value.trim();
+  if(!q||!a){ showToast('Preencha pergunta e resposta'); return; }
+  var row={categoria:cat,pergunta:q,resposta:a,updated_at:new Date().toISOString()};
+  if(_faqEditId){
+    var r=await sb.from('faq_vendas').update(row).eq('id',_faqEditId);
+    if(r.error){ showToast('Erro: '+r.error.message); return; }
+    var i=_faqData.findIndex(function(x){return x.id===_faqEditId;}); if(i>=0){ for(var k in row) _faqData[i][k]=row[k]; }
+  } else {
+    row.created_by=currentUser.nome||currentUser.username;
+    var r=await sb.from('faq_vendas').insert([row]).select().single();
+    if(r.error){ showToast('Erro: '+r.error.message); return; }
+    _faqData.push(r.data);
+  }
+  fecharModal('modalFaq'); renderFaq(); showToast('Salvo!');
+}
+async function deletarFaq(id){
+  var f=_faqData.find(function(x){return x.id===id;});
+  if(!confirm('Excluir "'+(f?f.pergunta:'')+'"?\nEsta ação não pode ser desfeita.')) return;
+  var r=await sb.from('faq_vendas').delete().eq('id',id);
+  if(r.error){ showToast('Erro: '+r.error.message); return; }
+  _faqData=_faqData.filter(function(x){return x.id!==id;}); delete _faqOpen[id]; renderFaq(); showToast('Excluído');
+}
+async function enviarSugestao(){
+  var inp=document.getElementById('sug-input'); var p=inp?inp.value.trim():'';
+  if(!p){ showToast('Escreva sua pergunta'); return; }
+  var row={pergunta:p,created_by:currentUser.nome||currentUser.username,respondido:false};
+  var r=await sb.from('faq_sugestoes_vendas').insert([row]).select().single();
+  if(r.error){ showToast('Erro: '+r.error.message); return; }
+  _faqSugs.unshift(r.data); if(inp) inp.value=''; renderSugestoes(); showToast('Pergunta enviada!');
+}
+function abrirSugModal(id){
+  _sugRespId=id; var s=_faqSugs.find(function(x){return x.id===id;});
+  document.getElementById('sug-preview').textContent=s.pergunta||'';
+  document.getElementById('sug-m-cat').value=s.categoria||'atendimento';
+  document.getElementById('sug-m-resp').value=s.resposta||'';
+  document.getElementById('modalSug').classList.add('open');
+}
+async function responderSugestao(moverParaFaq){
+  var resp=document.getElementById('sug-m-resp').value.trim(); if(!resp){ showToast('Escreva a resposta'); return; }
+  var cat=document.getElementById('sug-m-cat').value; var s=_faqSugs.find(function(x){return x.id===_sugRespId;});
+  var upd={resposta:resp,respondido:true,categoria:cat,updated_at:new Date().toISOString()};
+  var r=await sb.from('faq_sugestoes_vendas').update(upd).eq('id',_sugRespId);
+  if(r.error){ showToast('Erro: '+r.error.message); return; }
+  for(var k in upd) s[k]=upd[k];
+  if(moverParaFaq){
+    var row={categoria:cat,pergunta:s.pergunta,resposta:resp,created_by:currentUser.nome||currentUser.username,updated_at:new Date().toISOString()};
+    var r2=await sb.from('faq_vendas').insert([row]).select().single();
+    if(!r2.error){ _faqData.push(r2.data); showToast('Movido para o FAQ!'); } else showToast('Erro ao mover: '+r2.error.message);
+  } else showToast('Respondido!');
+  fecharModal('modalSug'); renderFaq(); renderSugestoes();
+}
+async function deletarSugestao(id){
+  if(!confirm('Excluir esta dúvida?')) return;
+  var r=await sb.from('faq_sugestoes_vendas').delete().eq('id',id);
+  if(r.error){ showToast('Erro: '+r.error.message); return; }
+  _faqSugs=_faqSugs.filter(function(x){return x.id!==id;}); renderSugestoes(); showToast('Excluído');
 }
 
 // ===================== DESTINOS OPERADOS (portado do HUB) =====================
