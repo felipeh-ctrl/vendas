@@ -387,6 +387,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--text2);cursor:pointer;margin:4px 0 2px}
 .senha-info{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green-l);font-size:12px;padding:8px 12px;border-radius:var(--r);margin-top:10px;display:none}
 
+.repo-cat-bar{max-width:840px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap}
+.repo-chip{font-size:12px;padding:5px 12px;border-radius:var(--r-full);border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;font-family:var(--font)}
+.repo-chip.on{background:rgba(207,101,20,.14);border-color:var(--accent);color:var(--orange-l)}
+.repo-grid{max-width:840px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.repo-card{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px}
+.repo-card.destaque{border-color:rgba(207,101,20,.4)}
+.repo-top{display:flex;align-items:flex-start;gap:10px}
+.repo-ic{font-size:22px;color:var(--accent);flex-shrink:0}
+.repo-nome{font-size:14px;font-weight:700;color:var(--text);line-height:1.25}
+.repo-desc{font-size:12px;color:var(--text3);margin-top:2px}
+.repo-meta{display:flex;align-items:center;gap:8px;margin-top:auto}
+.repo-catbadge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);background:var(--surface3);padding:2px 8px;border-radius:var(--r-full)}
+.repo-open{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:var(--surface3);border:none;border-radius:var(--r);padding:6px 11px;font-size:12px;color:var(--text);cursor:pointer;font-family:var(--font);text-decoration:none}
+.repo-open:hover{background:var(--surface4)}
+.repo-open .ic{font-size:13px}
+.repo-admin{display:flex;gap:6px;border-top:1px solid var(--border);padding-top:8px}
+
+.selo-hub{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:var(--r-full);background:rgba(59,130,246,.14);color:var(--blue-l);border:1px solid rgba(59,130,246,.3);margin-left:auto}
 </style>
 </head>
 <body>
@@ -518,6 +536,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 <symbol id="ic-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="3" />
   <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
   <circle cx="18" cy="5" r="3" /></symbol>
+<symbol id="ic-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+  <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+  <path d="M10 9H8" />
+  <path d="M16 13H8" />
+  <path d="M16 17H8" /></symbol>
+<symbol id="ic-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+  <circle cx="9" cy="9" r="2" />
+  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol>
+<symbol id="ic-file-spreadsheet" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+  <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+  <path d="M8 13h2" />
+  <path d="M14 13h2" />
+  <path d="M8 17h2" />
+  <path d="M14 17h2" /></symbol>
+<symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 3v12" />
+  <path d="m17 8-5-5-5 5" />
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol>
+<symbol id="ic-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6" />
+  <path d="M10 14 21 3" />
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -645,6 +683,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
   <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalConf')">Cancelar</button><button class="btn-confirm-delete" onclick="_confExec()">Confirmar</button></div>
 </div></div>
 
+
+<div class="modal-overlay" id="modalRepo"><div class="modal" style="max-width:520px">
+  <h2 id="repoTit">Novo item</h2>
+  <div class="form-group"><label>Tipo</label><select id="repoTipo" onchange="onTipoRepo()"><option value="link">Link</option><option value="documento">Documento (URL)</option><option value="arquivo">Arquivo (upload)</option></select></div>
+  <div class="form-group"><label>Título</label><input id="repoTitulo"></div>
+  <div class="form-group"><label>Descrição (opcional)</label><input id="repoDesc"></div>
+  <div class="form-group" id="repoUrlWrap"><label>URL</label><input id="repoUrl" placeholder="https://..."></div>
+  <div class="form-group" id="repoFileWrap" style="display:none"><label>Arquivo (PDF, planilha, imagem, txt)</label><input type="file" id="repoFile"><div id="repoFileAtual" style="font-size:12px;color:var(--text3);margin-top:6px"></div></div>
+  <div class="row">
+    <div class="form-group"><label>Categoria</label><select id="repoCat"><option>Geral</option><option>Operacional</option><option>Vendas</option><option>Financeiro</option><option>Treinamento</option></select></div>
+  </div>
+  <label class="chk"><input type="checkbox" id="repoDestaque"> Destacar no topo</label>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalRepo')">Cancelar</button><button class="btn-modal-save" id="repoSalvarBtn" onclick="salvarRepo()">Salvar</button></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -657,6 +710,11 @@ const SB_URL  = 'https://ufdinaeooqsnnyiuqzsy.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmZGluYWVvb3Fzbm55aXVxenN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4Mjk4OTYsImV4cCI6MjA5ODQwNTg5Nn0.Lq_8DVwcyR_rNcugU4UCc0nYuygXLA8Mo7OuP9e6AaI';
 
 const sb = supabase.createClient(SB_URL, SB_ANON, { auth: { persistSession: true, autoRefreshToken: true } });
+
+// ---- HUB (somente leitura, para o feed de avisos) ----
+const SB_HUB_URL  = 'https://kwukcpnxzidboiolntqp.supabase.co';
+const SB_HUB_ANON = 'COLE_AQUI_A_ANON_KEY_DO_HUB';
+const sbHub = supabase.createClient(SB_HUB_URL, SB_HUB_ANON, { auth: { persistSession: false, autoRefreshToken: false } });
 
 // ---------- helpers ----------
 function icon(name){ return '<span class="ic"><svg><use href="#ic-'+name+'"/></svg></span>'; }
@@ -763,7 +821,8 @@ function irView(v){
   document.getElementById('view-'+v).classList.add('active');
   fecharSidebar(); renderNav();
   if(v==='avisos') carregarAvisos();
-  if(['destinos','tours','postos','repo'].includes(v)) renderEmBreve(v);
+  if(['destinos','tours','postos'].includes(v)) renderEmBreve(v);
+  if(v==='repo') carregarRepo();
   if(v==='usuarios') carregarUsuarios();
 }
 function irTemplates(destino,tipo){
@@ -860,18 +919,35 @@ function onBusca(){ _busca=document.getElementById('busca').value.trim(); if(cur
 // ============================================================
 // AVISOS (lê avisos_vendas; feed do HUB entra com o FDW)
 // ============================================================
+async function _fetchHubAvisos(){
+  if(!SB_HUB_ANON || SB_HUB_ANON.indexOf('COLE_')===0) return [];
+  try{ const { data, error } = await sbHub.from('vw_vendas_avisos').select('*').order('created_at',{ascending:false}); if(error) throw error; return data||[]; }
+  catch(e){ return []; }
+}
 async function carregarAvisos(){
   const area=document.getElementById('avisosArea');
   area.innerHTML='<div class="loading">Carregando avisos...</div>';
   try{
-    const { data, error } = await sb.from('avisos_vendas').select('*').eq('status','ativo').order('fixado',{ascending:false}).order('created_at',{ascending:false});
-    if(error) throw error;
-    let top = isAdmin()?('<div class="view-toolbar"><h2>Avisos</h2><button class="btn-novo" onclick="abrirNovoAviso()">'+icon('bell')+' Novo aviso</button></div>'):'';
-    if(!data.length){ area.innerHTML=top+'<div class="embreve">'+icon('bell')+'<h3>Sem avisos por enquanto</h3><p>Avisos publicados pelos admins aparecem aqui. O feed do HUB (mensagens marcadas “Notificar Time de Vendas”) entra quando ligarmos o FDW.</p></div>'; return; }
+    const [va, hub] = await Promise.all([
+      sb.from('avisos_vendas').select('*').eq('status','ativo').order('fixado',{ascending:false}).order('created_at',{ascending:false}),
+      _fetchHubAvisos()
+    ]);
+    if(va.error) throw va.error;
+    _avisos = va.data||[];
+    const merged = _avisos.map(function(a){ return Object.assign({_origem:'vendas'}, a); })
+      .concat((hub||[]).map(function(m){ return {_origem:'hub', id:'hub_'+m.id, titulo:m.titulo, texto:m.texto, autor:m.autor, created_at:m.created_at, fixado:false}; }));
+    merged.sort(function(a,b){ return (b.fixado?1:0)-(a.fixado?1:0) || (new Date(b.created_at)-new Date(a.created_at)); });
+    const top = isAdmin()?('<div class="view-toolbar"><h2>Avisos</h2><button class="btn-novo" onclick="abrirNovoAviso()">'+icon('bell')+' Novo aviso</button></div>'):'<div class="view-toolbar"><h2>Avisos</h2></div>';
+    if(!merged.length){ area.innerHTML=top+'<div class="embreve">'+icon('bell')+'<h3>Sem avisos por enquanto</h3><p>Avisos dos admins e mensagens do HUB marcadas \u201cNotificar Time de Vendas\u201d aparecem aqui.</p></div>'; return; }
     let h=top+'<div class="tpl-group">';
-    data.forEach(a=>{ h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div></div><div class="card-text expanded">'+escH(a.texto)+'</div><div style="display:flex;align-items:center;margin-top:6px"><div style="font-size:11px;color:var(--text3);flex:1">'+escH(a.autor||'')+'</div>'+(isAdmin()?('<div class="urow-acts"><button class="btn-mini" onclick="abrirEditarAviso('+a.id+')">'+icon('pencil')+'</button><button class="btn-mini del" onclick="excluirAviso('+a.id+')">'+icon('trash-2')+'</button></div>'):'')+'</div></div>'; });
+    merged.forEach(function(a){
+      const isHub=a._origem==='hub';
+      const selo=isHub?('<span class="selo-hub">'+icon('plane')+' HUB</span>'):'';
+      const acoes=(!isHub && isAdmin())?('<div class="urow-acts"><button class="btn-mini" onclick="abrirEditarAviso('+a.id+')">'+icon('pencil')+'</button><button class="btn-mini del" onclick="excluirAviso('+a.id+')">'+icon('trash-2')+'</button></div>'):'';
+      h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div>'+selo+'</div><div class="card-text expanded">'+escH(a.texto)+'</div><div style="display:flex;align-items:center;margin-top:6px"><div style="font-size:11px;color:var(--text3);flex:1">'+escH(a.autor||'')+(isHub?' \u00b7 via HUB':'')+'</div>'+acoes+'</div></div>';
+    });
     h+='</div>';
-    area.innerHTML=h; _avisos=data;
+    area.innerHTML=h;
   }catch(ex){ area.innerHTML='<div class="loading">Erro: '+escH(ex.message||ex)+'</div>'; }
 }
 
@@ -1100,6 +1176,108 @@ function excluirUser(id){
       await callEdge('delete-auth-user', { email:u.auth_email });
       const {error}=await sb.from('vendas_auth').delete().eq('id',id); if(error)throw error;
       showToast('Usuário excluído.'); carregarUsuarios();
+    }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  });
+}
+
+
+
+// ============================================================
+// REPOSITÓRIO / LINKS ÚTEIS — CRUD + upload (admin)
+// ============================================================
+const REPO_BUCKET='repositorio-vendas';
+let _repo=[]; let _repoCat='Todos'; let _repoEdit=null;
+function _repoIcon(r){
+  if(r.tipo==='link') return 'link';
+  if(r.tipo==='documento') return 'file-text';
+  const m=(r.arquivo_mime||'').toLowerCase(), n=(r.arquivo_nome||'').toLowerCase();
+  if(m.startsWith('image/')||/\.(png|jpe?g|gif|webp|svg)$/.test(n)) return 'image';
+  if(/sheet|excel|csv/.test(m)||/\.(xlsx?|csv)$/.test(n)) return 'file-spreadsheet';
+  return 'file-text';
+}
+function _repoUrl(r){
+  if(r.tipo==='arquivo' && r.arquivo_path){ try{ return sb.storage.from(REPO_BUCKET).getPublicUrl(r.arquivo_path).data.publicUrl; }catch(e){ return '#'; } }
+  return r.url||'#';
+}
+async function carregarRepo(){
+  const area=document.getElementById('view-repo');
+  area.innerHTML='<div class="loading">Carregando...</div>';
+  try{
+    const { data, error } = await sb.from('repositorio_vendas').select('*').order('destaque',{ascending:false}).order('created_at',{ascending:false});
+    if(error) throw error; _repo=data||[];
+    renderRepo();
+  }catch(ex){ area.innerHTML='<div class="loading">Erro: '+escH(ex.message||ex)+'</div>'; }
+}
+function renderRepo(){
+  const area=document.getElementById('view-repo');
+  let h=isAdmin()?('<div class="view-toolbar"><h2>Links Úteis / Repositório</h2><button class="btn-novo" onclick="abrirNovoRepo()">'+icon('upload')+' Novo item</button></div>'):'<div class="view-toolbar"><h2>Links Úteis / Repositório</h2></div>';
+  const cats=['Todos'].concat(Array.from(new Set(_repo.map(r=>r.categoria||'Geral'))));
+  h+='<div class="repo-cat-bar">'+cats.map(c=>'<button class="repo-chip'+(c===_repoCat?' on':'')+'" onclick="_repoCat=\''+c.replace(/'/g,"")+'\';renderRepo()">'+escH(c)+'</button>').join('')+'</div>';
+  let rows=_repo; if(_repoCat!=='Todos') rows=rows.filter(r=>(r.categoria||'Geral')===_repoCat);
+  if(!rows.length){ h+='<div class="embreve">'+icon('folder')+'<h3>Nada por aqui ainda</h3><p>'+(isAdmin()?'Use "Novo item" para adicionar links ou arquivos.':'Sem itens nesta categoria.')+'</p></div>'; area.innerHTML=h; return; }
+  h+='<div class="repo-grid">';
+  rows.forEach(r=>{
+    const url=_repoUrl(r); const isArq=r.tipo==='arquivo';
+    h+='<div class="repo-card'+(r.destaque?' destaque':'')+'">'
+      +'<div class="repo-top"><span class="ic repo-ic"><svg><use href="#ic-'+_repoIcon(r)+'"/></svg></span>'
+      +'<div><div class="repo-nome">'+escH(r.titulo)+'</div>'+(r.descricao?'<div class="repo-desc">'+escH(r.descricao)+'</div>':'')+'</div></div>'
+      +'<div class="repo-meta"><span class="repo-catbadge">'+escH(r.categoria||'Geral')+'</span>'
+      +'<a class="repo-open" href="'+escH(url)+'" target="_blank" rel="noopener">'+icon(isArq?'download':'external-link')+' '+(isArq?'Baixar':'Abrir')+'</a></div>'
+      +(isAdmin()?('<div class="repo-admin"><button class="btn-mini" onclick="abrirEditarRepo('+r.id+')">'+icon('pencil')+' Editar</button><button class="btn-mini del" onclick="excluirRepo('+r.id+')">'+icon('trash-2')+' Excluir</button></div>'):'')
+      +'</div>';
+  });
+  h+='</div>'; area.innerHTML=h;
+}
+function onTipoRepo(){ const t=document.getElementById('repoTipo').value; document.getElementById('repoUrlWrap').style.display=(t==='arquivo')?'none':'block'; document.getElementById('repoFileWrap').style.display=(t==='arquivo')?'block':'none'; }
+function abrirNovoRepo(){
+  _repoEdit=null; document.getElementById('repoTit').textContent='Novo item';
+  document.getElementById('repoTipo').value='link'; document.getElementById('repoTitulo').value=''; document.getElementById('repoDesc').value='';
+  document.getElementById('repoUrl').value=''; document.getElementById('repoFile').value=''; document.getElementById('repoFileAtual').textContent='';
+  document.getElementById('repoCat').value=(_repoCat!=='Todos'?_repoCat:'Geral'); document.getElementById('repoDestaque').checked=false;
+  onTipoRepo(); document.getElementById('modalRepo').classList.add('open');
+}
+function abrirEditarRepo(id){
+  const r=_repo.find(x=>x.id===id); if(!r)return; _repoEdit=r;
+  document.getElementById('repoTit').textContent='Editar item';
+  document.getElementById('repoTipo').value=r.tipo; document.getElementById('repoTitulo').value=r.titulo; document.getElementById('repoDesc').value=r.descricao||'';
+  document.getElementById('repoUrl').value=r.url||''; document.getElementById('repoFile').value='';
+  document.getElementById('repoFileAtual').textContent=r.arquivo_nome?('Atual: '+r.arquivo_nome+' (escolha outro só se quiser trocar)'):'';
+  document.getElementById('repoCat').value=r.categoria||'Geral'; document.getElementById('repoDestaque').checked=!!r.destaque;
+  onTipoRepo(); document.getElementById('modalRepo').classList.add('open');
+}
+async function salvarRepo(){
+  const tipo=document.getElementById('repoTipo').value;
+  const row={ tipo, titulo:document.getElementById('repoTitulo').value.trim(), descricao:document.getElementById('repoDesc').value.trim()||null, categoria:document.getElementById('repoCat').value, destaque:document.getElementById('repoDestaque').checked };
+  if(!row.titulo){ showToast('Informe o título.'); return; }
+  const btn=document.getElementById('repoSalvarBtn'); btn.disabled=true;
+  try{
+    if(tipo==='arquivo'){
+      const f=document.getElementById('repoFile').files[0];
+      if(f){
+        const safe=f.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+        const path=Date.now()+'_'+safe;
+        const up=await sb.storage.from(REPO_BUCKET).upload(path,f,{upsert:false});
+        if(up.error) throw up.error;
+        row.arquivo_path=path; row.arquivo_nome=f.name; row.arquivo_mime=f.type||''; row.url=null;
+      } else if(!_repoEdit){ showToast('Selecione um arquivo.'); btn.disabled=false; return; }
+    } else {
+      row.url=document.getElementById('repoUrl').value.trim();
+      if(!row.url){ showToast('Informe a URL.'); btn.disabled=false; return; }
+      row.arquivo_path=null; row.arquivo_nome=null; row.arquivo_mime=null;
+    }
+    if(_repoEdit){ const {error}=await sb.from('repositorio_vendas').update(row).eq('id',_repoEdit.id); if(error)throw error; }
+    else { const {error}=await sb.from('repositorio_vendas').insert(row); if(error)throw error; }
+    fecharModal('modalRepo'); showToast('Item salvo!'); carregarRepo();
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  btn.disabled=false;
+}
+function excluirRepo(id){
+  const r=_repo.find(x=>x.id===id); if(!r)return;
+  pedirConfirm('Excluir "'+r.titulo+'"?', async ()=>{
+    try{
+      if(r.tipo==='arquivo' && r.arquivo_path){ await sb.storage.from(REPO_BUCKET).remove([r.arquivo_path]); }
+      const {error}=await sb.from('repositorio_vendas').delete().eq('id',id); if(error)throw error;
+      showToast('Excluído.'); carregarRepo();
     }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
   });
 }
