@@ -413,6 +413,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .utable tr:hover td{background:var(--surface2)}
 .papel-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--r-full)}
 .papel-admin{background:rgba(207,101,20,.15);color:var(--orange-l)}
+.papel-master{background:var(--accent);color:#080808}
 .papel-vendedor{background:rgba(59,130,246,.15);color:var(--blue-l)}
 .papel-espectador{background:var(--surface3);color:var(--text3)}
 .st-inativo{color:var(--text3)}
@@ -888,7 +889,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <div class="form-group"><label>Nome</label><input id="usNome"></div>
   <div class="form-group"><label>Usuário (login)</label><input id="usUsername" placeholder="ex.: joao"></div>
   <div class="row">
-    <div class="form-group"><label>Papel</label><select id="usPapel"><option value="vendedor">Vendedor</option><option value="admin">Admin</option><option value="espectador">Espectador</option></select></div>
+    <div class="form-group"><label>Papel</label><select id="usPapel"></select></div>
     <div class="form-group"><label>Status</label><select id="usStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
   </div>
   <div class="senha-info" id="usSenhaInfo"></div>
@@ -997,7 +998,9 @@ const SUBCATS = ['Dúvidas','Dicas','Dia a Dia'];
 const OUTROS = ['Primeiro contato','Coleta de dados','Roteiro & Orçamento','Pagamento','Promoções','Objeções & Fechamento','Sobre a viagem','Uso interno','Empresa','Roteiros'];
 const TIPO_ICON = { 'Dúvidas':'circle-help','Dicas':'lightbulb','Dia a Dia':'clipboard-list','Primeiro contato':'user','Coleta de dados':'clipboard-list','Roteiro & Orçamento':'map','Pagamento':'credit-card','Promoções':'tag','Objeções & Fechamento':'messages-square','Sobre a viagem':'plane','Uso interno':'lock','Empresa':'briefcase','Roteiros':'route' };
 
-function isAdmin(){ return currentUser && currentUser.papel === 'admin'; }
+function isAdmin(){ return currentUser && (currentUser.papel === 'admin' || currentUser.papel === 'master'); }
+function isMaster(){ return currentUser && currentUser.papel === 'master'; }
+function _papelLabel(p){ return p==='master'?'Master':(p==='admin'?'Admin':(p==='espectador'?'Espectador':'Vendedor')); }
 
 // ============================================================
 // LOGIN
@@ -1061,12 +1064,12 @@ async function entrarApp(){
   // perfil UI
   document.getElementById('profileNome').textContent = me.nome;
   document.getElementById('pmNome').textContent = me.nome;
-  const papelTxt = me.papel==='admin'?'Admin':(me.papel==='espectador'?'Espectador':'Vendedor');
-  document.getElementById('profileRole').innerHTML = icon(me.papel==='admin'?'shield':'user')+' '+papelTxt;
+  const papelTxt = _papelLabel(me.papel);
+  document.getElementById('profileRole').innerHTML = icon(me.papel==='master'?'sparkles':(me.papel==='admin'?'shield':'user'))+' '+papelTxt;
   document.getElementById('pmSub').textContent = papelTxt+' · Fui Gostei Trips';
   const av=document.getElementById('profileAvatar');
   av.textContent=(me.nome||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
-  av.classList.toggle('admin', me.papel==='admin');
+  av.classList.toggle('admin', me.papel==='admin'||me.papel==='master');
   _aplicarAvatar();
   // mostra app
   document.getElementById('loginScreen').style.display='none';
@@ -1508,25 +1511,35 @@ async function carregarUsuarios(){
     let h='<div class="view-toolbar"><button class="btn-novo" onclick="abrirNovoUser()">'+icon('users')+' Nova pessoa</button></div>';
     h+='<table class="utable"><thead><tr><th>Nome</th><th>Usuário</th><th>Papel</th><th>Status</th><th></th></tr></thead><tbody>';
     _users.forEach(u=>{
-      const pc={admin:'papel-admin',vendedor:'papel-vendedor',espectador:'papel-espectador'}[u.papel]||'papel-vendedor';
+      const pc={master:'papel-master',admin:'papel-admin',vendedor:'papel-vendedor',espectador:'papel-espectador'}[u.papel]||'papel-vendedor';
+      var protegido=(u.papel==='master' && !isMaster());
+      var acts=protegido
+        ? '<span class="ic" title="Protegido — só o master edita" style="color:var(--text3)"><svg><use href="#ic-lock"/></svg></span>'
+        : ('<button class="btn-mini" onclick="abrirEditarUser('+u.id+')">'+icon('pencil')+'</button>'
+          +'<button class="btn-mini" onclick="resetSenhaUser('+u.id+')" title="Resetar senha">'+icon('key')+'</button>'
+          +'<button class="btn-mini del" onclick="excluirUser('+u.id+')">'+icon('trash-2')+'</button>');
       h+='<tr><td style="color:var(--text)">'+escH(u.nome)+'</td><td>'+escH(u.username)+'</td>'
-        +'<td><span class="papel-badge '+pc+'">'+escH(u.papel)+'</span></td>'
+        +'<td><span class="papel-badge '+pc+'">'+escH(_papelLabel(u.papel))+'</span></td>'
         +'<td'+(u.status!=='ativo'?' class="st-inativo"':'')+'>'+escH(u.status)+'</td>'
-        +'<td><div class="urow-acts">'
-        +'<button class="btn-mini" onclick="abrirEditarUser('+u.id+')">'+icon('pencil')+'</button>'
-        +'<button class="btn-mini" onclick="resetSenhaUser('+u.id+')" title="Resetar senha">'+icon('key')+'</button>'
-        +'<button class="btn-mini del" onclick="excluirUser('+u.id+')">'+icon('trash-2')+'</button>'
-        +'</div></td></tr>';
+        +'<td><div class="urow-acts">'+acts+'</div></td></tr>';
     });
     h+='</tbody></table>';
     area.innerHTML=h;
   }catch(ex){ area.innerHTML='<div class="loading">Erro: '+escH(ex.message||ex)+'</div>'; }
 }
+function _fillPapelSelect(current){
+  var sel=document.getElementById('usPapel'); if(!sel) return;
+  var opts=[['vendedor','Vendedor'],['admin','Admin'],['espectador','Espectador']];
+  if(isMaster()) opts.unshift(['master','Master']);
+  var h=''; opts.forEach(function(o){ h+='<option value="'+o[0]+'"'+(o[0]===current?' selected':'')+'>'+o[1]+'</option>'; });
+  if(current==='master' && !isMaster()){ h='<option value="master" selected>Master</option>'+h; }
+  sel.innerHTML=h;
+}
 function abrirNovoUser(){
   _userEdit=null;
   document.getElementById('usTit').textContent='Nova pessoa';
   document.getElementById('usNome').value=''; document.getElementById('usUsername').value=''; document.getElementById('usUsername').disabled=false;
-  document.getElementById('usPapel').value='vendedor'; document.getElementById('usStatus').value='ativo';
+  _fillPapelSelect('vendedor'); document.getElementById('usStatus').value='ativo';
   document.getElementById('usSenhaInfo').style.display='none';
   document.getElementById('modalUser').classList.add('open');
 }
@@ -1534,7 +1547,7 @@ function abrirEditarUser(id){
   const u=_users.find(x=>x.id===id); if(!u)return; _userEdit=u;
   document.getElementById('usTit').textContent='Editar pessoa';
   document.getElementById('usNome').value=u.nome; document.getElementById('usUsername').value=u.username; document.getElementById('usUsername').disabled=true;
-  document.getElementById('usPapel').value=u.papel; document.getElementById('usStatus').value=u.status;
+  _fillPapelSelect(u.papel); document.getElementById('usStatus').value=u.status;
   document.getElementById('usSenhaInfo').style.display='none';
   document.getElementById('modalUser').classList.add('open');
 }
@@ -1545,6 +1558,8 @@ async function salvarUser(){
   const status=document.getElementById('usStatus').value;
   const btn=document.getElementById('usSalvarBtn');
   if(!nome||!username){ showToast('Preencha nome e usuário.'); return; }
+  if(_userEdit && _userEdit.papel==='master' && !isMaster()){ showToast('Apenas o master pode editar o master.'); return; }
+  if(papel==='master' && !isMaster()){ showToast('Apenas o master pode definir alguém como master.'); return; }
   btn.disabled=true;
   try{
     if(_userEdit){
@@ -1564,6 +1579,7 @@ async function salvarUser(){
 }
 function resetSenhaUser(id){
   const u=_users.find(x=>x.id===id); if(!u)return;
+  if(u.papel==='master' && !isMaster()){ showToast('Apenas o master pode resetar a senha do master.'); return; }
   const nova=u.username+'123$';
   pedirConfirm('Resetar a senha de '+u.nome+' para "'+nova+'"?', async ()=>{
     try{ await callEdge('reset-password', { email:u.auth_email, new_password:nova }); showToast('Senha resetada: '+nova); }
@@ -1572,6 +1588,7 @@ function resetSenhaUser(id){
 }
 function excluirUser(id){
   const u=_users.find(x=>x.id===id); if(!u)return;
+  if(u.papel==='master' && !isMaster()){ showToast('Apenas o master pode remover um master.'); return; }
   if(currentUser && u.auth_email===currentUser.auth_email){ showToast('Você não pode excluir a si mesmo.'); return; }
   pedirConfirm('Excluir '+u.nome+' definitivamente? A conta de login também será removida.', async ()=>{
     try{
