@@ -713,7 +713,7 @@ const sb = supabase.createClient(SB_URL, SB_ANON, { auth: { persistSession: true
 
 // ---- HUB (somente leitura, para o feed de avisos) ----
 const SB_HUB_URL  = 'https://kwukcpnxzidboiolntqp.supabase.co';
-const SB_HUB_ANON = 'COLE_AQUI_A_ANON_KEY_DO_HUB';
+const SB_HUB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3dWtjcG54emlkYm9pb2xudHFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDk4NjIsImV4cCI6MjA4OTUyNTg2Mn0.B3tTajk8UNVt8Zqv_RyQ3TNvCv0xD1QinyoCAUshAY8';
 const sbHub = supabase.createClient(SB_HUB_URL, SB_HUB_ANON, { auth: { persistSession: false, autoRefreshToken: false } });
 
 // ---------- helpers ----------
