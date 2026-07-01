@@ -1088,10 +1088,18 @@ var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FA
 function setAreaTitle(v){ var el=document.getElementById('areaTitle'); if(el) el.textContent=AREA_TITULOS[v]||''; }
 var _areaClockTimer=null;
 function startAreaClock(){ if(_areaClockTimer) return; var tick=function(){ var el=document.getElementById('areaClockT'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }; tick(); _areaClockTimer=setInterval(tick,1000); }
-var _presenceChannel=null;
-function iniciarPresence(){
+var _presenceChannel=null; var _fotoMap={};
+async function _carregarFotos(){
+  try{ var r=await sb.from('vendas_auth').select('username,foto'); if(r&&r.data){ _fotoMap={}; r.data.forEach(function(x){ if(x.foto) _fotoMap[x.username]=x.foto; }); } }catch(e){}
+}
+function _refreshOnline(){
+  if(!_presenceChannel) return;
+  try{ var st=_presenceChannel.presenceState(); var users=Object.keys(st).map(function(k){ var a=st[k][0]||{}; return {key:k,name:a.name||'?',papel:a.papel||'',ts:a.ts||0}; }); _renderOnlineSidebar(users); }catch(e){}
+}
+async function iniciarPresence(){
   if(!currentUser||_presenceChannel) return;
   try{
+    await _carregarFotos();
     _presenceChannel=sb.channel('vendas-presence',{config:{presence:{key:currentUser.username}}});
     _presenceChannel.on('presence',{event:'sync'},function(){
       var st=_presenceChannel.presenceState();
@@ -1112,7 +1120,9 @@ function _renderOnlineSidebar(users){
     var age=now-(u.ts||now);
     var dot=age<120000?'#22c55e':(age<600000?'#f59e0b':'#ef4444');
     var ini=(u.name||'?').trim().split(/\s+/).map(function(x){return x[0];}).slice(0,2).join('').toUpperCase();
-    return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;"><div style="position:relative;flex-shrink:0;"><div style="width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#080808;">'+escH(ini)+'</div><div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:'+dot+';border:2px solid var(--surface);"></div></div><span style="flex:1;font-size:12px;color:var(--text);font-weight:'+(isMe?'700':'400')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escH(u.name)+(isMe?' (você)':'')+'</span></div>';
+    var foto=_fotoMap[u.key];
+    var av=foto?('<div style="width:26px;height:26px;border-radius:50%;background-image:url('+foto+');background-size:cover;background-position:center;"></div>'):('<div style="width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#080808;">'+escH(ini)+'</div>');
+    return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;"><div style="position:relative;flex-shrink:0;">'+av+'<div style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:'+dot+';border:2px solid var(--surface);"></div></div><span style="flex:1;font-size:12px;color:var(--text);font-weight:'+(isMe?'700':'400')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escH(u.name)+(isMe?' (você)':'')+'</span></div>';
   }).join('');
 }
 
@@ -1613,7 +1623,8 @@ async function salvarPerfil(){
   var r=await sb.from('vendas_auth').update({foto:_perfilFoto,nascimento:nasc}).eq('auth_email',currentUser.auth_email);
   if(r.error){ showToast('Erro: '+r.error.message); return; }
   currentUser.foto=_perfilFoto; currentUser.nascimento=nasc;
-  _aplicarAvatar();
+  if(_perfilFoto) _fotoMap[currentUser.username]=_perfilFoto; else delete _fotoMap[currentUser.username];
+  _aplicarAvatar(); _refreshOnline();
   fecharModal('modalPerfil'); showToast('Perfil salvo!');
 }
 
