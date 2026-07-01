@@ -438,22 +438,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .home-sec.novo-sec{color:var(--accent)}
 .home-sec.lido-sec{color:var(--text3);margin-top:14px}
 /* Recolhida (mapa) */
-.rec-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.rec-tab{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .15s}
-.rec-tab:hover{border-color:var(--accent);color:var(--orange-l)}
-.rec-tab.on{background:var(--accent);border-color:var(--accent);color:#080808}
-.rec-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.rec-topbar{display:flex;gap:4px;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:5px;width:100%}
+.rec-city{flex:1;text-align:center;padding:12px 10px;border:none;border-radius:9px;background:transparent;color:var(--text2);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .15s}
+.rec-city:hover{color:var(--orange-l)}
+.rec-city.on{background:var(--accent);color:#080808}
+.rec-search-wrap{position:relative;margin-bottom:14px}
+.rec-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:12px 16px;width:100%}
 .rec-search .ic{color:var(--text3)}
-.rec-search input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:var(--font)}
-.rec-wrap{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
-.rec-map{height:520px;border-radius:14px;border:1px solid var(--border);overflow:hidden;z-index:0}
-.rec-list{max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
-.rec-count{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:2px 2px 4px}
-.rec-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s}
-.rec-item:hover{border-color:var(--accent);background:var(--surface2)}
-.rec-item-nome{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
-.rec-item-zona{font-size:11px;color:var(--accent);margin-top:3px;margin-left:20px;font-weight:600}
-@media(max-width:760px){.rec-wrap{grid-template-columns:1fr}.rec-map{height:380px}.rec-list{max-height:320px}}
+.rec-search input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;font-family:var(--font)}
+.rec-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow-lg);z-index:500;max-height:360px;overflow-y:auto;padding:6px;display:none}
+.rec-dropdown.open{display:block}
+.rec-group{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);padding:9px 10px 4px}
+.rec-item{background:transparent;border:1px solid transparent;border-radius:9px;padding:9px 11px;cursor:pointer;transition:all .12s}
+.rec-item:hover{background:var(--surface3)}
+.rec-item-nome{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+.rec-item-zona{font-size:11px;color:var(--accent);margin-top:3px;margin-left:21px;font-weight:600}
+.rec-geo-loading,.rec-geo-hint{font-size:12px;color:var(--text3);padding:8px 11px}
+.rec-map{height:640px;width:100%;border-radius:14px;border:1px solid var(--border);overflow:hidden;z-index:0}
+@media(max-width:760px){.rec-map{height:460px}}
 .papel-vendedor{background:rgba(59,130,246,.15);color:var(--blue-l)}
 .papel-espectador{background:var(--surface3);color:var(--text3)}
 .st-inativo{color:var(--text3)}
@@ -1389,34 +1391,39 @@ var RECOLHIDA_MAPS={
   spa:{nome:'San Pedro',mid:'1rM0nUpSAq0QsjKRUxi14jAWLpPp3GKU',center:[-22.9098,-68.2020],zoom:14},
   stgo:{nome:'Santiago',mid:'1YAgvrnTdnFpDQWyn-Eb0i_BdAsfUVaw',center:[-33.4180,-70.6000],zoom:12}
 };
-var _recAtual='spa', _recCache={}, _recMap=null, _recData=null, _recMarkers={};
+var _recAtual='spa', _recCache={}, _recMap=null, _recData=null, _recMarkers={}, _recTmpMk=null, _recGeoTimer=null, _recGeoReq=0, _recGeoRes=[], _recDocBound=false;
 function carregarRecolhida(){
   var area=document.getElementById('view-recolhida'); if(!area) return;
-  var tabs=''; Object.keys(RECOLHIDA_MAPS).forEach(function(k){ tabs+='<button class="rec-tab'+(k===_recAtual?' on':'')+'" onclick="_recTrocar(\''+k+'\')">'+escH(RECOLHIDA_MAPS[k].nome)+'</button>'; });
-  var h='<div style="max-width:1000px;margin:0 auto">';
-  h+='<div class="rec-tabs">'+tabs+'</div>';
-  h+='<div class="rec-search">'+icon('search',16)+'<input id="rec-busca" placeholder="Buscar hotel, rua ou ponto…" oninput="_recBuscar()" autocomplete="off"></div>';
-  h+='<div class="rec-wrap"><div id="rec-map" class="rec-map"></div><div id="rec-list" class="rec-list"></div></div>';
+  var cities=''; Object.keys(RECOLHIDA_MAPS).forEach(function(k){ cities+='<button class="rec-city'+(k===_recAtual?' on':'')+'" onclick="_recTrocar(\''+k+'\')">'+escH(RECOLHIDA_MAPS[k].nome)+'</button>'; });
+  var h='';
+  h+='<div class="rec-topbar">'+cities+'</div>';
+  h+='<div class="rec-search-wrap">';
+  h+='<div class="rec-search">'+icon('search',16)+'<input id="rec-busca" placeholder="Buscar hotel, rua ou endereço…" oninput="_recBuscar()" onfocus="_recBuscar()" autocomplete="off"></div>';
+  h+='<div id="rec-dropdown" class="rec-dropdown"></div>';
   h+='</div>';
+  h+='<div id="rec-map" class="rec-map"></div>';
   area.innerHTML=h;
+  if(!_recDocBound){ document.addEventListener('click',_recDocClick); _recDocBound=true; }
   _recRender();
 }
-function _recTrocar(k){ if(_recAtual===k) return; _recAtual=k; carregarRecolhida(); }
+function _recDocClick(e){ var w=document.querySelector('.rec-search-wrap'); var d=document.getElementById('rec-dropdown'); if(d&&w&&!w.contains(e.target)) d.classList.remove('open'); }
+function _recTrocar(k){ if(_recAtual===k) return; _recAtual=k; var el=document.getElementById('rec-busca'); if(el) el.value=''; carregarRecolhida(); }
 async function _recRender(){
-  var mapEl=document.getElementById('rec-map'), listEl=document.getElementById('rec-list'); if(!mapEl) return;
-  listEl.innerHTML='<div class="loading" style="padding:14px">Carregando mapa…</div>';
+  var mapEl=document.getElementById('rec-map'); if(!mapEl) return;
+  mapEl.innerHTML='<div class="loading" style="padding:48px;text-align:center;color:var(--text3)">Carregando mapa…</div>';
   await _destLoadLeaflet();
   var cfg=RECOLHIDA_MAPS[_recAtual];
   var data=_recCache[_recAtual];
   if(!data){
     try{ var res=await callEdge('recolhida-kml',{mid:cfg.mid}); data=_kmlParse(res.kml||''); _recCache[_recAtual]=data; }
-    catch(ex){ listEl.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text3)">Não consegui carregar o mapa.<br><span style="color:var(--red-l)">'+escH(ex.message||ex)+'</span><br><br>Confirme se a Edge Function <b>recolhida-kml</b> está publicada no Supabase.</div>'; return; }
+    catch(ex){ mapEl.innerHTML='<div style="padding:40px;font-size:13px;color:var(--text3);text-align:center">Não consegui carregar o mapa.<br><span style="color:var(--red-l)">'+escH(ex.message||ex)+'</span><br><br>Confirme se a Edge Function <b>recolhida-kml</b> está publicada no Supabase.</div>'; return; }
   }
   _recData=data;
   if(_recMap){ try{ _recMap.remove(); }catch(e){} _recMap=null; }
+  mapEl.innerHTML='';
   _recMap=L.map('rec-map',{zoomControl:true,scrollWheelZoom:false}).setView(cfg.center,cfg.zoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(_recMap);
-  _recMarkers={};
+  _recMarkers={}; _recTmpMk=null;
   var bounds=[]; var pal=['#22c55e','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#f97316','#06b6d4','#ec4899'];
   data.polygons.forEach(function(pz,idx){
     var col=pal[idx%pal.length];
@@ -1431,22 +1438,56 @@ async function _recRender(){
   });
   if(bounds.length){ try{ _recMap.fitBounds(bounds,{padding:[30,30],maxZoom:15}); }catch(e){} }
   setTimeout(function(){ if(_recMap) _recMap.invalidateSize(); },200);
-  _recBuscar();
 }
 function _recZonaDe(lat,lng){ if(!_recData) return ''; for(var i=0;i<_recData.polygons.length;i++){ if(_pointInPoly(lat,lng,_recData.polygons[i].ring)) return _recData.polygons[i].name||_recData.polygons[i].layer||''; } return ''; }
 function _recNorm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function _recDescTxt(d){ return String(d||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,180); }
+function _recDist(la1,lo1,la2,lo2){ var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180,a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2); return 2*R*Math.asin(Math.sqrt(a)); }
+function _recGeoLabel(pr){ pr=pr||{}; var main=pr.name||((pr.street||'')+(pr.housenumber?(' '+pr.housenumber):'')); var extra=pr.city||pr.district||pr.county||''; var parts=[]; if(main) parts.push(main); if(extra&&extra!==main) parts.push(extra); return parts.join(', ')||'Endereço'; }
 function _recBuscar(){
-  var listEl=document.getElementById('rec-list'); if(!listEl||!_recData) return;
-  var el=document.getElementById('rec-busca'); var q=_recNorm(el?el.value:'');
-  var pts=_recData.points.map(function(p,idx){ return {p:p,idx:idx}; });
-  var filtered=q?pts.filter(function(o){ return _recNorm(o.p.name).indexOf(q)>=0 || _recNorm(o.p.desc).indexOf(q)>=0 || _recNorm(o.p._zona).indexOf(q)>=0; }):pts;
-  if(!filtered.length){ listEl.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text3)">Nenhum ponto encontrado.</div>'; return; }
-  var h='<div class="rec-count">'+filtered.length+' ponto'+(filtered.length>1?'s':'')+'</div>';
-  filtered.slice(0,300).forEach(function(o){ h+='<div class="rec-item" onclick="_recIr('+o.idx+')"><div class="rec-item-nome">'+icon('map-pin',14)+' '+escH(o.p.name||'Ponto')+'</div>'+(o.p._zona?'<div class="rec-item-zona">'+escH(o.p._zona)+'</div>':'')+'</div>'; });
-  listEl.innerHTML=h;
+  var el=document.getElementById('rec-busca'), dd=document.getElementById('rec-dropdown'); if(!el||!dd) return;
+  var raw=el.value||''; var q=_recNorm(raw);
+  if(!q){ dd.classList.remove('open'); dd.innerHTML=''; return; }
+  var html='';
+  if(_recData){
+    var pts=_recData.points.map(function(p,idx){return {p:p,idx:idx};}).filter(function(o){ return _recNorm(o.p.name).indexOf(q)>=0 || _recNorm(o.p.desc).indexOf(q)>=0 || _recNorm(o.p._zona).indexOf(q)>=0; });
+    if(pts.length){ html+='<div class="rec-group">Pontos marcados</div>'; pts.slice(0,8).forEach(function(o){ html+='<div class="rec-item" onclick="_recIr('+o.idx+')"><div class="rec-item-nome">'+icon('map-pin',14)+' '+escH(o.p.name||'Ponto')+'</div>'+(o.p._zona?'<div class="rec-item-zona">'+escH(o.p._zona)+'</div>':'')+'</div>'; }); }
+  }
+  html+='<div class="rec-group">Endereços</div><div id="rec-geo"><div class="rec-geo-loading">Buscando endereços…</div></div>';
+  dd.innerHTML=html; dd.classList.add('open');
+  if(_recGeoTimer) clearTimeout(_recGeoTimer);
+  if(q.length<3){ var g0=document.getElementById('rec-geo'); if(g0) g0.innerHTML='<div class="rec-geo-hint">Digite um pouco mais pra buscar endereços…</div>'; return; }
+  _recGeoTimer=setTimeout(function(){ _recGeocode(raw); },420);
 }
-function _recIr(idx){ var p=_recData&&_recData.points[idx], mk=_recMarkers[idx]; if(!p||!mk||!_recMap) return; _recMap.flyTo([p.lat,p.lng],16,{duration:.6}); setTimeout(function(){ try{ mk.openPopup(); }catch(e){} },650); }
+async function _recGeocode(raw){
+  var cfg=RECOLHIDA_MAPS[_recAtual]; var reqId=++_recGeoReq;
+  try{
+    var url='https://photon.komoot.io/api/?limit=7&lang=default&lat='+cfg.center[0]+'&lon='+cfg.center[1]+'&q='+encodeURIComponent(raw);
+    var r=await fetch(url); var j=await r.json();
+    if(reqId!==_recGeoReq) return;
+    var g=document.getElementById('rec-geo'); if(!g) return;
+    var maxDist=(_recAtual==='spa'?40:90);
+    var out=((j&&j.features)||[]).map(function(f){
+      var c=f.geometry&&f.geometry.coordinates, pr=f.properties||{}; if(!c) return null;
+      return {lat:c[1],lng:c[0],label:_recGeoLabel(pr),cc:(pr.countrycode||'').toUpperCase(),dist:_recDist(c[1],c[0],cfg.center[0],cfg.center[1])};
+    }).filter(function(o){ return o && (o.cc===''||o.cc==='CL') && o.dist<maxDist; });
+    _recGeoRes=out;
+    if(!out.length){ g.innerHTML='<div class="rec-geo-hint">Nenhum endereço encontrado por aqui.</div>'; return; }
+    var h=''; out.slice(0,6).forEach(function(o,i){ h+='<div class="rec-item" onclick="_recEndereco('+i+')"><div class="rec-item-nome">'+icon('map-pin',14)+' '+escH(o.label)+'</div></div>'; });
+    g.innerHTML=h;
+  }catch(e){ if(reqId===_recGeoReq){ var g2=document.getElementById('rec-geo'); if(g2) g2.innerHTML='<div class="rec-geo-hint">Não consegui buscar endereços agora.</div>'; } }
+}
+function _recEndereco(i){
+  var o=_recGeoRes&&_recGeoRes[i]; if(!o||!_recMap) return;
+  if(_recTmpMk){ try{ _recMap.removeLayer(_recTmpMk); }catch(e){} _recTmpMk=null; }
+  var zona=_recZonaDe(o.lat,o.lng);
+  _recTmpMk=L.circleMarker([o.lat,o.lng],{radius:9,color:'#cf6514',fillColor:'#cf6514',fillOpacity:.9,weight:2}).addTo(_recMap);
+  _recTmpMk.bindPopup('<b>'+escH(o.label)+'</b><br>'+(zona?'<span style="color:#cf6514;font-weight:700">Recolhida: '+escH(zona)+'</span>':'<span style="color:#888">Fora das áreas de recolhida</span>'));
+  _recMap.flyTo([o.lat,o.lng],16,{duration:.6});
+  setTimeout(function(){ if(_recTmpMk) _recTmpMk.openPopup(); },650);
+  var dd=document.getElementById('rec-dropdown'); if(dd) dd.classList.remove('open');
+}
+function _recIr(idx){ var p=_recData&&_recData.points[idx], mk=_recMarkers[idx]; if(!p||!mk||!_recMap) return; _recMap.flyTo([p.lat,p.lng],16,{duration:.6}); setTimeout(function(){ try{ mk.openPopup(); }catch(e){} },650); var dd=document.getElementById('rec-dropdown'); if(dd) dd.classList.remove('open'); }
 function _pointInPoly(lat,lng,ring){ var inside=false; for(var i=0,j=ring.length-1;i<ring.length;j=i++){ var yi=ring[i][0],xi=ring[i][1],yj=ring[j][0],xj=ring[j][1]; var hit=((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/((yj-yi)||1e-12)+xi); if(hit) inside=!inside; } return inside; }
 function _kmlParse(kmlText){
   var out={points:[],polygons:[]};
