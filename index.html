@@ -437,6 +437,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .lk-emerg{font-size:12px;color:var(--text3);margin-top:3px;border-top:1px solid var(--border);padding-top:5px}
 .lk-parc{font-size:11px;color:var(--text3);margin-top:3px}
 
+.tt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
+.tt-ghead{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:16px}
+.tt-bar{width:4px;height:20px;border-radius:2px;background:var(--accent);flex-shrink:0}
+.tt-gname{font-size:15px;font-weight:800;color:var(--accent)}
+.tt-gcount{font-size:12px;color:var(--text3);margin-left:auto}
+.tt-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:9px}
+.tt-code{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;word-break:break-word}
+.tt-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.3}
+.tt-attrs{display:flex;flex-direction:column;gap:5px}
+.tt-attr{font-size:13px;color:var(--text2);display:flex;gap:7px;align-items:flex-start;line-height:1.4}
+.tt-attr .ic{color:var(--text3);font-size:14px;margin-top:2px;flex-shrink:0}
+.tt-attr strong{color:var(--text);font-weight:700}
+.tt-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:1px;padding-top:9px;border-top:1px solid var(--border)}
+.tt-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:8px}
+.tt-btn .ic{font-size:13px}
+.tt-notion{color:var(--accent);background:rgba(207,101,20,.12)}
+.tt-emerg{color:#ef4444;background:rgba(239,68,68,.12)}
+.tt-parc{font-size:11px;color:var(--text3);margin-left:auto;display:inline-flex;align-items:center;gap:5px}
+.tt-parc .ic{font-size:12px}
+
 </style>
 </head>
 <body>
@@ -1472,29 +1492,35 @@ async function carregarToursValores(){
   if(!ativos.length){ h+='<div class="embreve">'+icon('route')+'<h3>Sem tours</h3><p>Nenhum tour cadastrado no HUB.</p></div></div>'; area.innerHTML=h; return; }
   const g={}; ativos.forEach(function(r){ const d=r.localidade||'Outros'; (g[d]=g[d]||[]).push(r); });
   const dests=Object.keys(g).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
-  h+='<div class="lk-grid">';
+  h+='<div class="tt-grid">';
   dests.forEach(function(d){
     const n=g[d].length;
-    h+='<div class="lk-ghead"><span class="lk-bar"></span><span class="lk-gname">'+escH(d)+'</span><span class="lk-gcount">'+n+(n===1?' tour':' tours')+'</span></div>';
+    h+='<div class="tt-ghead"><span class="tt-bar"></span><span class="tt-gname">'+escH(d)+'</span><span class="tt-gcount">'+n+(n===1?' tour':' tours')+'</span></div>';
     g[d].slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(r){
-      let nu=r.link_notion?(String(r.link_notion).indexOf('http')===0?r.link_notion:'https://'+r.link_notion):null;
-      let c='<div class="lk-card">';
-      c+='<div class="lk-codigo">'+escH(r.codigo||'—')+'</div>';
-      c+='<div class="lk-nome">'+escH(r.nome||'—')+'</div>';
-      c+='<div class="lk-rows">';
-      c+='<div class="lk-row">'+icon('clock')+'<strong>Horário:</strong> '+escH(r.horario||'—')+'</div>';
-      c+='<div class="lk-row">'+icon('map-pin')+'<strong>Ponto:</strong> '+escH(r.ponto_encontro||'—')+'</div>';
-      if(r.aclimatacao && r.aclimatacao!=='-') c+='<div class="lk-row">'+icon('mountain')+'<strong>Aclimatação:</strong> '+escH(r.aclimatacao)+'</div>';
-      if(r.duracao) c+='<div class="lk-row">'+icon('clock')+'<strong>Duração:</strong> Aprox. '+escH(r.duracao)+'</div>';
+      var nu=r.link_notion?(String(r.link_notion).indexOf('http')===0?r.link_notion:'https://'+r.link_notion):null;
+      var em=r.emergencia?String(r.emergencia).trim():'';
+      var emUrl=em && (/^https?:\/\//i.test(em) || em.toLowerCase().indexOf('wa.me')>=0);
+      var c='<div class="tt-card">';
+      if(r.codigo) c+='<div class="tt-code">'+escH(r.codigo)+'</div>';
+      c+='<div class="tt-name">'+escH(r.nome||'Tour')+'</div>';
+      var at='';
+      if(r.horario && r.horario!=='-') at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Horário:</strong> '+escH(r.horario)+'</span></div>';
+      if(r.ponto_encontro && r.ponto_encontro!=='-') at+='<div class="tt-attr">'+icon('map-pin')+'<span><strong>Ponto:</strong> '+escH(r.ponto_encontro)+'</span></div>';
+      if(r.aclimatacao && r.aclimatacao!=='-') at+='<div class="tt-attr">'+icon('mountain')+'<span><strong>Aclimatação:</strong> '+escH(r.aclimatacao)+'</span></div>';
+      if(r.duracao && r.duracao!=='-') at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Duração:</strong> Aprox. '+escH(r.duracao)+'</span></div>';
+      if(em && !emUrl) at+='<div class="tt-attr">'+icon('siren')+'<span><strong>Emergência:</strong> '+escH(em)+'</span></div>';
+      if(at) c+='<div class="tt-attrs">'+at+'</div>';
       var _ent=null;
       if(r.entrada_id==='__none__'){ _ent=null; }
       else if(r.entrada_id){ _ent=_vEntradasMap[String(r.entrada_id)]||null; }
       else { _ent=_entradaPorNome(r.localidade, r.nome); }
-      if(_ent){ var _inner=_ingressoInner(_ent,'var(--accent)',false); if(_inner) c+='<div style="margin-top:5px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;">'+_inner+'</div>'; }
-      if(nu) c+='<div class="lk-notion"><a href="'+escH(nu)+'" target="_blank" rel="noopener">'+icon('link')+' Ver no Notion '+icon('external-link')+'</a></div>';
-      if(r.emergencia) c+='<div class="lk-emerg">'+icon('siren')+' '+escH(r.emergencia)+'</div>';
-      if(r.parceiro) c+='<div class="lk-parc">'+icon('handshake')+' '+escH(r.parceiro)+'</div>';
-      c+='</div></div>';
+      if(_ent){ var _inner=_ingressoInner(_ent,'var(--accent)',false); if(_inner) c+='<div style="margin-top:2px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;">'+_inner+'</div>'; }
+      var ft='';
+      if(nu) ft+='<a class="tt-btn tt-notion" href="'+escH(nu)+'" target="_blank" rel="noopener">'+icon('link')+' Ver no Notion '+icon('external-link')+'</a>';
+      if(emUrl){ var href=em.indexOf('http')===0?em:'https://'+em; ft+='<a class="tt-btn tt-emerg" href="'+escH(href)+'" target="_blank" rel="noopener">'+icon('siren')+' Emergência</a>'; }
+      if(r.parceiro) ft+='<span class="tt-parc">'+icon('handshake')+' '+escH(r.parceiro)+'</span>';
+      if(ft) c+='<div class="tt-foot">'+ft+'</div>';
+      c+='</div>';
       h+=c;
     });
   });
