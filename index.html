@@ -648,6 +648,55 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
   <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></symbol>
 <symbol id="ic-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
   <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol>
+<symbol id="ic-cloud-sun" viewBox="0 0 24 24"><path d="M12 2v2" />
+  <path d="m4.93 4.93 1.41 1.41" />
+  <path d="M20 12h2" />
+  <path d="m19.07 4.93-1.41 1.41" />
+  <path d="M15.947 12.65a4 4 0 0 0-5.925-4.128" />
+  <path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" /></symbol>
+<symbol id="ic-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" /></symbol>
+<symbol id="ic-cloud-fog" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+  <path d="M16 17H7" />
+  <path d="M17 21H9" /></symbol>
+<symbol id="ic-cloud-drizzle" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+  <path d="M8 19v1" />
+  <path d="M8 14v1" />
+  <path d="M16 19v1" />
+  <path d="M16 14v1" />
+  <path d="M12 21v1" />
+  <path d="M12 16v1" /></symbol>
+<symbol id="ic-cloud-rain" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+  <path d="M16 14v6" />
+  <path d="M8 14v6" />
+  <path d="M12 16v6" /></symbol>
+<symbol id="ic-cloud-snow" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+  <path d="M8 15h.01" />
+  <path d="M8 19h.01" />
+  <path d="M12 17h.01" />
+  <path d="M12 21h.01" />
+  <path d="M16 15h.01" />
+  <path d="M16 19h.01" /></symbol>
+<symbol id="ic-snowflake" viewBox="0 0 24 24"><path d="m10 20-1.25-2.5L6 18" />
+  <path d="M10 4 8.75 6.5 6 6" />
+  <path d="m14 20 1.25-2.5L18 18" />
+  <path d="m14 4 1.25 2.5L18 6" />
+  <path d="m17 21-3-6h-4" />
+  <path d="m17 3-3 6 1.5 3" />
+  <path d="M2 12h6.5L10 9" />
+  <path d="m20 10-1.5 2 1.5 2" />
+  <path d="M22 12h-6.5L14 15" />
+  <path d="m4 10 1.5 2L4 14" />
+  <path d="m7 21 3-6-1.5-3" />
+  <path d="m7 3 3 6h4" /></symbol>
+<symbol id="ic-cloud-lightning" viewBox="0 0 24 24"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973" />
+  <path d="m13 12-3 5h4l-3 5" /></symbol>
+<symbol id="ic-thermometer" viewBox="0 0 24 24"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" /></symbol>
+<symbol id="ic-banknote" viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="6" rx="2" />
+  <circle cx="12" cy="12" r="2" />
+  <path d="M6 12h.01M18 12h.01" /></symbol>
+<symbol id="ic-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" />
+  <path d="m12 5 7 7-7 7" /></symbol>
+<symbol id="ic-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -1377,23 +1426,154 @@ async function _hubGet(view, order){
 function _hubSemKey(area,titulo){ document.getElementById(area).innerHTML='<div class="view-toolbar"><h2>'+titulo+'</h2></div><div class="embreve">'+icon('lock')+'<h3>Fonte do HUB não configurada</h3><p>Falta a anon key do HUB no app.</p></div>'; }
 function _grupoPorDestino(rows){ const g={}; rows.forEach(function(r){ const d=r.destino||'Geral'; (g[d]=g[d]||[]).push(r); }); return g; }
 
+function _tourCardHTML(r){
+  var nu=r.link_notion?(String(r.link_notion).indexOf('http')===0?r.link_notion:'https://'+r.link_notion):null;
+  var em=r.emergencia?String(r.emergencia).trim():'';
+  var emUrl=em && (/^https?:\/\//i.test(em) || em.toLowerCase().indexOf('wa.me')>=0);
+  var c='<div class="tt-card">';
+  if(r.codigo) c+='<div class="tt-code">'+escH(r.codigo)+'</div>';
+  c+='<div class="tt-name">'+escH(r.nome||'Tour')+'</div>';
+  var at='';
+  if(r.horario && r.horario!=='-') at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Horário:</strong> '+escH(r.horario)+'</span></div>';
+  if(r.ponto_encontro && r.ponto_encontro!=='-') at+='<div class="tt-attr">'+icon('map-pin')+'<span><strong>Ponto:</strong> '+escH(r.ponto_encontro)+'</span></div>';
+  if(r.aclimatacao && r.aclimatacao!=='-') at+='<div class="tt-attr">'+icon('mountain')+'<span><strong>Aclimatação:</strong> '+escH(r.aclimatacao)+'</span></div>';
+  if(r.duracao && r.duracao!=='-') at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Duração:</strong> Aprox. '+escH(r.duracao)+'</span></div>';
+  if(em && !emUrl) at+='<div class="tt-attr">'+icon('siren')+'<span><strong>Emergência:</strong> '+escH(em)+'</span></div>';
+  if(at) c+='<div class="tt-attrs">'+at+'</div>';
+  var _ent=null;
+  if(r.entrada_id==='__none__'){ _ent=null; }
+  else if(r.entrada_id){ _ent=_vEntradasMap[String(r.entrada_id)]||null; }
+  else { _ent=_entradaPorNome(r.localidade, r.nome); }
+  if(_ent){ var _inner=_ingressoInner(_ent,'var(--accent)',false); if(_inner) c+='<div style="margin-top:2px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;">'+_inner+'</div>'; }
+  var ft='';
+  if(nu) ft+='<a class="tt-btn tt-notion" href="'+escH(nu)+'" target="_blank" rel="noopener">'+icon('link')+' Ver no Notion '+icon('external-link')+'</a>';
+  if(emUrl){ var href=em.indexOf('http')===0?em:'https://'+em; ft+='<a class="tt-btn tt-emerg" href="'+escH(href)+'" target="_blank" rel="noopener">'+icon('siren')+' Emergência</a>'; }
+  if(r.parceiro) ft+='<span class="tt-parc">'+icon('handshake')+' '+escH(r.parceiro)+'</span>';
+  if(ft) c+='<div class="tt-foot">'+ft+'</div>';
+  c+='</div>';
+  return c;
+}
+
+// ===================== DESTINOS OPERADOS (portado do HUB) =====================
+var DEST_COORDS={'San Pedro de Atacama':[-22.9135,-68.1998],'Uyuni':[-20.4611,-66.8257],'Santiago':[-33.4489,-70.6693],'Cusco':[-13.5320,-71.9675],'La Paz':[-16.5000,-68.1193],'Cartagena':[10.3910,-75.4794],'San Andrés':[12.5847,-81.7006]};
+var DEST_TZ={'Santiago':'America/Santiago','San Pedro de Atacama':'America/Santiago','Uyuni':'America/La_Paz','La Paz':'America/La_Paz','Cusco':'America/Lima','Cartagena':'America/Bogota','San Andrés':'America/Bogota'};
+var DEST_MOEDA={'Santiago':{code:'CLP'},'San Pedro de Atacama':{code:'CLP'},'Uyuni':{code:'BOB'},'La Paz':{code:'BOB'},'Cusco':{code:'PEN'},'Cartagena':{code:'COP'},'San Andrés':{code:'COP'}};
+var WX_DAY={0:'sun',1:'sun',2:'cloud-sun',3:'cloud',45:'cloud-fog',48:'cloud-fog',51:'cloud-drizzle',53:'cloud-drizzle',55:'cloud-rain',61:'cloud-rain',63:'cloud-rain',65:'cloud-rain',71:'cloud-snow',73:'cloud-snow',75:'snowflake',77:'snowflake',80:'cloud-drizzle',81:'cloud-rain',82:'cloud-lightning',85:'cloud-snow',86:'snowflake',95:'cloud-lightning',96:'cloud-lightning',99:'cloud-lightning'};
+var WX_NIGHT={0:'moon',1:'moon',2:'cloud',3:'cloud',45:'cloud-fog',48:'cloud-fog',51:'cloud-rain',53:'cloud-rain',55:'cloud-rain',61:'cloud-rain',63:'cloud-rain',65:'cloud-rain',71:'cloud-snow',73:'cloud-snow',75:'snowflake',77:'snowflake',80:'cloud-rain',81:'cloud-rain',82:'cloud-lightning',85:'cloud-snow',86:'snowflake',95:'cloud-lightning',96:'cloud-lightning',99:'cloud-lightning'};
+var _destConfig=[], _destTours=[], _destAtivo=null, _destMap=null;
+var _destCotacoes={}, _destCotacaoTs=0, _destCotacaoDate='';
+var _wxCache={}, WX_CACHE_TTL=1800000;
+function _destGetCoords(loc){ var c=_destConfig.find(function(x){return x.localidade===loc;}); if(c && c.lat && c.lng) return [parseFloat(c.lat),parseFloat(c.lng)]; return DEST_COORDS[loc]||null; }
+function _destGetCfg(loc){ return _destConfig.find(function(x){return x.localidade===loc;})||null; }
+function _destHoraLocal(dest){ var tz=DEST_TZ[dest]; if(!tz) return ''; try{ return new Intl.DateTimeFormat('pt-BR',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()); }catch(e){ return ''; } }
+function _destIniciarRelogioCard(dest){ var s=dest.replace(/[^a-zA-Z0-9]/g,'_'); var el=document.getElementById('hl-'+s); if(!el||!DEST_TZ[dest]) return; var tick=function(){ var hh=_destHoraLocal(dest); if(hh){ var e2=document.getElementById('hl-'+s); if(e2) e2.innerHTML=icon('clock')+' '+hh; } }; setInterval(tick,60000); }
+async function _destLoadCotacoes(){ if(_destCotacaoTs) return; try{ var r=await fetch('https://open.er-api.com/v6/latest/BRL'); var d=await r.json(); if(d&&d.rates){ _destCotacoes=d.rates; _destCotacaoTs=Date.now(); _destCotacaoDate=d.time_last_update_utc?new Date(d.time_last_update_utc).toLocaleDateString('pt-BR'):new Date().toLocaleDateString('pt-BR'); } }catch(e){} }
+function _destFormatCotacao(dest){ var m=DEST_MOEDA[dest]; if(!m||!_destCotacoes[m.code]) return ''; var rate=_destCotacoes[m.code]; var f=rate>=100?Math.round(rate).toLocaleString('pt-BR'):rate.toFixed(2); return '1 BRL = '+f+' '+m.code; }
+function _destRenderCotacaoCard(dest){ var s=dest.replace(/[^a-zA-Z0-9]/g,'_'); var el=document.getElementById('cot-'+s); if(!el) return; var att=0; var chk=function(){ var e2=document.getElementById('cot-'+s); if(!e2) return; var txt=_destFormatCotacao(dest); if(txt){ e2.style.color='var(--text2)'; e2.innerHTML=icon('banknote')+' '+txt; } else if(att<10){ att++; setTimeout(chk,1000); } else { e2.style.display='none'; } }; setTimeout(chk,500); }
+function _wxIcon(code,isDay){ var map=(isDay===0)?WX_NIGHT:WX_DAY; return map[code]||'thermometer'; }
+function _wxDayLabel(dateStr,i){ if(i===0) return 'Hoje'; if(i===1) return 'Amanhã'; var d=new Date(dateStr+'T12:00:00'); return ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]; }
+function _wxRenderCard(el,data){
+  var days=data.daily.time, codes=data.daily.weathercode, maxT=data.daily.temperature_2m_max, minT=data.daily.temperature_2m_min, cw=data.current_weather||null;
+  var nowHtml='';
+  if(cw){ var isDay=(cw.is_day!==undefined)?cw.is_day:1; var nowIcon=_wxIcon(cw.weathercode,isDay); var nowTemp=Math.round(cw.temperature);
+    nowHtml='<div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:8px;padding:8px 10px;margin-bottom:6px;"><span style="font-size:28px;line-height:1;">'+icon(nowIcon)+'</span><div style="flex:1;"><div style="font-size:22px;font-weight:800;color:var(--text);line-height:1;">'+nowTemp+'°C</div><div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;">'+(isDay?icon('sun')+' Dia':icon('moon')+' Noite')+' · Agora</div></div></div>'; }
+  var cols=days.slice(1,4).map(function(d,i){ var wxc=_wxIcon(codes[i+1]); var mx=Math.round(maxT[i+1]); var mn=Math.round(minT[i+1]); var lbl=_wxDayLabel(d,i+1);
+    return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;"><span style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">'+lbl+'</span><span style="font-size:18px;line-height:1;">'+icon(wxc)+'</span><span style="font-size:11px;font-weight:700;color:var(--text);">'+mx+'°</span><span style="font-size:10px;color:var(--text3);">'+mn+'°</span></div>'; }).join('');
+  el.innerHTML='<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:6px;"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Clima</div>'+nowHtml+'<div style="display:flex;gap:4px;background:var(--surface2);border-radius:8px;padding:8px 6px;">'+cols+'</div></div>';
+}
+async function _destCarregarClima(dest){ var coords=_destGetCoords(dest); var s=dest.replace(/[^a-zA-Z0-9]/g,'_'); var el=document.getElementById('wx-'+s); if(!el) return; if(!coords){ el.innerHTML=''; return; } var cached=_wxCache[dest]; if(cached&&(Date.now()-cached.ts)<WX_CACHE_TTL){ _wxRenderCard(el,cached.data); return; } var url='https://api.open-meteo.com/v1/forecast?latitude='+coords[0]+'&longitude='+coords[1]+'&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4'; try{ var resp=await fetch(url); if(!resp.ok) throw 0; var data=await resp.json(); _wxCache[dest]={data:data,ts:Date.now()}; var e2=document.getElementById('wx-'+s); if(e2) _wxRenderCard(e2,data); }catch(e){ var e3=document.getElementById('wx-'+s); if(e3) e3.innerHTML='<span style="font-size:11px;color:var(--text3);">Clima indisponível</span>'; } }
+function _destTrunc(t,max){ t=String(t||''); return t.length>max?t.slice(0,max)+'...':t; }
+function _destLoadLeaflet(){ return new Promise(function(res){ if(window.L){ res(); return; } if(!document.querySelector('link[href*="leaflet"]')){ var lnk=document.createElement('link'); lnk.rel='stylesheet'; lnk.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(lnk); } var sc=document.createElement('script'); sc.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; sc.onload=res; sc.onerror=function(){res();}; document.head.appendChild(sc); }); }
+
 async function carregarDestinos(){
   const area=document.getElementById('view-destinos');
   area.innerHTML='<div class="loading">Carregando destinos...</div>';
-  const rows=await _hubGet('vw_vendas_destinos','localidade');
-  if(rows===null){ _hubSemKey('view-destinos','Destinos Operados'); return; }
-  let h='<div class="view-toolbar"><h2>Destinos Operados</h2></div><div class="hubsec">';
-  if(!rows.length){ h+='<div class="embreve">'+icon('mountain')+'<h3>Sem destinos</h3><p>Nenhum destino cadastrado no HUB.</p></div></div>'; area.innerHTML=h; return; }
-  h+='<div class="dest-grid">';
-  rows.forEach(function(r){
-    h+='<div class="dest-card"><div class="dest-h">'+(r.emoji?'<span class="dest-emoji">'+escH(r.emoji)+'</span>':icon('map-pin'))+'<div><div class="dest-nome">'+escH(r.localidade||'—')+'</div>'+(r.pais?'<div class="dest-pais">'+escH(r.pais)+'</div>':'')+'</div></div>';
-    if(r.descricao) h+='<div class="dest-desc">'+escH(r.descricao)+'</div>';
-    if(r.destaques) h+='<div class="dest-bloco"><b>Destaques</b><span>'+escH(r.destaques)+'</span></div>';
-    if(r.curiosidades) h+='<div class="dest-bloco"><b>Curiosidades</b><span>'+escH(r.curiosidades)+'</span></div>';
-    h+='</div>';
-  });
-  h+='</div></div>'; area.innerHTML=h;
+  await _destLoadLeaflet();
+  const _r=await Promise.all([_hubGet('vw_vendas_destinos','localidade'), _hubGet('vw_vendas_tours','localidade'), _hubGet('vw_vendas_entradas','tour')]);
+  if(_r[0]===null){ _hubSemKey('view-destinos','Destinos Operados'); return; }
+  _destConfig=_r[0]||[];
+  _destTours=(_r[1]||[]).filter(function(t){ return t.inativo!==true; });
+  _vEntradasArr=_r[2]||[]; _vEntradasMap={}; _vEntradasArr.forEach(function(e){ _vEntradasMap[String(e.id)]=e; });
+  _destAtivo=null; _destLoadCotacoes();
+  if(!_destConfig.length){ area.innerHTML='<div class="view-toolbar"><h2>Destinos Operados</h2></div><div class="embreve">'+icon('mountain')+'<h3>Sem destinos</h3><p>Nenhum destino cadastrado no HUB.</p></div>'; return; }
+  area.innerHTML='<div class="view-toolbar"><h2>Destinos Operados</h2></div>'
+    +'<div id="dest-breadcrumb" style="display:none;max-width:1000px;margin:0 auto 10px"></div>'
+    +'<div id="dest-map-wrap" style="max-width:1000px;margin:0 auto 16px"><div id="dest-map" style="height:260px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div></div>'
+    +'<div id="dest-conteudo" style="max-width:1000px;margin:0 auto"></div>';
+  _renderDestView();
+  setTimeout(function(){ _destInitMap(); }, 300);
 }
+function _destInitMap(){
+  var mapEl=document.getElementById('dest-map'); if(!mapEl||!window.L) return;
+  if(_destMap){ try{_destMap.remove();}catch(e){} _destMap=null; }
+  _destMap=L.map('dest-map',{zoomControl:true,scrollWheelZoom:false}).setView([-20,-70],3);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:18}).addTo(_destMap);
+  var seen={};
+  _destConfig.forEach(function(cf){ var d=cf.localidade; if(!d||seen[d]) return; seen[d]=1; var coords=_destGetCoords(d); if(!coords) return;
+    var count=_destTours.filter(function(t){return t.localidade===d;}).length;
+    var ic=L.divIcon({className:'',html:'<div style="background:#cf6514;width:16px;height:16px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',iconSize:[16,16],iconAnchor:[8,8]});
+    var mk=L.marker(coords,{icon:ic}).addTo(_destMap);
+    mk.bindTooltip(d+' · '+count+' tour'+(count!==1?'s':''));
+    mk.on('click', (function(dd){ return function(){ _destSelecionar(dd); }; })(d));
+  });
+  setTimeout(function(){ try{_destMap.invalidateSize(true);}catch(e){} },200);
+}
+function _renderDestView(){
+  var conteudo=document.getElementById('dest-conteudo'); if(!conteudo) return;
+  var crumb=document.getElementById('dest-breadcrumb'); var mapWrap=document.getElementById('dest-map-wrap');
+  if(!_destAtivo){
+    if(mapWrap) mapWrap.style.display='block'; if(crumb) crumb.style.display='none';
+    var lista=_destConfig.slice().sort(function(a,b){ return String(a.localidade||'').localeCompare(String(b.localidade||''),'pt-BR'); });
+    var cards=lista.map(function(cf){
+      var d=cf.localidade; var count=_destTours.filter(function(t){return t.localidade===d;}).length;
+      var parc=[]; _destTours.forEach(function(t){ if(t.localidade===d && t.parceiro && parc.indexOf(t.parceiro)<0) parc.push(t.parceiro); });
+      var s=d.replace(/[^a-zA-Z0-9]/g,'_'); var cor='var(--accent)';
+      var pais=cf.pais?'<div style="font-size:11px;color:var(--text3);">'+escH(cf.pais)+'</div>':'';
+      var desc=cf.descricao?'<div style="font-size:12px;color:var(--text2);margin:8px 0;line-height:1.5;">'+escH(_destTrunc(cf.descricao,110))+'</div>':'';
+      var infoRow='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
+      if(DEST_TZ[d]) infoRow+='<span id="hl-'+s+'" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:13px;font-weight:700;color:var(--text);">'+icon('clock')+' '+(_destHoraLocal(d)||'--:--')+'</span>';
+      if(DEST_MOEDA[d]) infoRow+='<span id="cot-'+s+'" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 9px;font-size:11px;color:var(--text3);">'+icon('banknote')+' ...</span>';
+      infoRow+='</div>';
+      return '<div onclick="_destSelecionar(\''+d.replace(/'/g,"\\'")+'\')" style="background:var(--surface);border:1px solid var(--border);border-top:3px solid '+cor+';border-radius:12px;padding:16px;cursor:pointer;">'
+        +'<div style="display:flex;align-items:center;gap:9px;margin-bottom:6px;">'+(cf.emoji?'<span style="font-size:24px;line-height:1;">'+escH(cf.emoji)+'</span>':icon('map-pin'))+'<div><div style="font-size:15px;font-weight:800;color:var(--text);">'+escH(d)+'</div>'+pais+'</div></div>'
+        +desc+infoRow+'<div id="wx-'+s+'"></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);"><span style="font-size:12px;color:var(--text3);">'+count+' tour'+(count!==1?'s':'')+' · '+parc.length+' parceiro'+(parc.length!==1?'s':'')+'</span><span style="font-size:12px;font-weight:700;color:'+cor+';">Ver '+icon('arrow-right')+'</span></div></div>';
+    });
+    conteudo.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;">'+cards.join('')+'</div>';
+    lista.forEach(function(cf){ _destIniciarRelogioCard(cf.localidade); _destRenderCotacaoCard(cf.localidade); _destCarregarClima(cf.localidade); });
+    return;
+  }
+  if(mapWrap) mapWrap.style.display='none';
+  if(crumb){ crumb.style.display='block'; crumb.innerHTML='<button class="tt-chip" onclick="_destSelecionar(null)">'+icon('arrow-right')+' Voltar aos destinos</button>'; }
+  var d=_destAtivo; var cf=_destGetCfg(d)||{localidade:d}; var s=d.replace(/[^a-zA-Z0-9]/g,'_');
+  var tours=_destTours.filter(function(t){ return t.localidade===d; });
+  var h='<div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:12px;padding:18px;margin-bottom:16px;">';
+  h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+(cf.emoji?'<span style="font-size:30px;line-height:1;">'+escH(cf.emoji)+'</span>':icon('map-pin'))+'<div><div style="font-size:20px;font-weight:800;color:var(--text);">'+escH(d)+'</div>'+(cf.pais?'<div style="font-size:12px;color:var(--text3);">'+escH(cf.pais)+'</div>':'')+'</div></div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">';
+  if(DEST_TZ[d]) h+='<span id="hl-'+s+'" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700;color:var(--text);">'+icon('clock')+' '+(_destHoraLocal(d)||'--:--')+'</span>';
+  if(DEST_MOEDA[d]) h+='<span id="cot-'+s+'" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text3);">'+icon('banknote')+' ...</span>';
+  h+='</div>';
+  if(cf.descricao) h+='<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-top:6px;">'+escH(cf.descricao)+'</div>';
+  if(cf.destaques) h+='<div style="margin-top:10px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:3px;">Destaques</div><div style="font-size:13px;color:var(--text2);line-height:1.5;">'+escH(cf.destaques)+'</div></div>';
+  if(cf.curiosidades) h+='<div style="margin-top:10px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:3px;">Curiosidades</div><div style="font-size:13px;color:var(--text2);line-height:1.5;">'+escH(cf.curiosidades)+'</div></div>';
+  h+='<div id="wx-'+s+'" style="margin-top:8px;"></div>';
+  h+='</div>';
+  if(tours.length){
+    var gp={}; tours.forEach(function(t){ var p=t.parceiro||'Sem parceiro'; (gp[p]=gp[p]||[]).push(t); });
+    h+='<div style="font-size:13px;font-weight:800;color:var(--text2);margin:4px 0 10px;">'+tours.length+' tour'+(tours.length!==1?'s':'')+' operado'+(tours.length!==1?'s':'')+'</div>';
+    Object.keys(gp).sort().forEach(function(p){
+      h+='<div class="tt-ghead"><span class="tt-bar"></span><span class="tt-gname">'+escH(p)+'</span><span class="tt-gcount">'+gp[p].length+(gp[p].length===1?' tour':' tours')+'</span></div>';
+      h+='<div class="tt-grid">';
+      gp[p].slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(t){ h+=_tourCardHTML(t); });
+      h+='</div>';
+    });
+  } else {
+    h+='<div class="embreve">'+icon('route')+'<h3>Sem tours cadastrados</h3><p>Este destino ainda não tem tours no HUB.</p></div>';
+  }
+  conteudo.innerHTML=h;
+  _destIniciarRelogioCard(d); _destRenderCotacaoCard(d); _destCarregarClima(d);
+}
+function _destSelecionar(d){ _destAtivo=d; _renderDestView(); if(!d) setTimeout(function(){ _destInitMap(); },200); try{ window.scrollTo(0,0); var mp=document.querySelector('.main-panel'); if(mp) mp.scrollTop=0; }catch(e){} }
 
 var _vEntradasMap = {};
 var _vEntradasArr = [];
@@ -1515,31 +1695,7 @@ function renderTours(){
     const n=g[d].length;
     h+='<div class="tt-ghead"><span class="tt-bar"></span><span class="tt-gname">'+escH(d)+'</span><span class="tt-gcount">'+n+(n===1?' tour':' tours')+'</span></div>';
     g[d].slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(r){
-      var nu=r.link_notion?(String(r.link_notion).indexOf('http')===0?r.link_notion:'https://'+r.link_notion):null;
-      var em=r.emergencia?String(r.emergencia).trim():'';
-      var emUrl=em && (/^https?:\/\//i.test(em) || em.toLowerCase().indexOf('wa.me')>=0);
-      var c='<div class="tt-card">';
-      if(r.codigo) c+='<div class="tt-code">'+escH(r.codigo)+'</div>';
-      c+='<div class="tt-name">'+escH(r.nome||'Tour')+'</div>';
-      var at='';
-      if(r.horario && r.horario!=='-') at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Horário:</strong> '+escH(r.horario)+'</span></div>';
-      if(r.ponto_encontro && r.ponto_encontro!=='-') at+='<div class="tt-attr">'+icon('map-pin')+'<span><strong>Ponto:</strong> '+escH(r.ponto_encontro)+'</span></div>';
-      if(r.aclimatacao && r.aclimatacao!=='-') at+='<div class="tt-attr">'+icon('mountain')+'<span><strong>Aclimatação:</strong> '+escH(r.aclimatacao)+'</span></div>';
-      if(r.duracao && r.duracao!=='-') at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Duração:</strong> Aprox. '+escH(r.duracao)+'</span></div>';
-      if(em && !emUrl) at+='<div class="tt-attr">'+icon('siren')+'<span><strong>Emergência:</strong> '+escH(em)+'</span></div>';
-      if(at) c+='<div class="tt-attrs">'+at+'</div>';
-      var _ent=null;
-      if(r.entrada_id==='__none__'){ _ent=null; }
-      else if(r.entrada_id){ _ent=_vEntradasMap[String(r.entrada_id)]||null; }
-      else { _ent=_entradaPorNome(r.localidade, r.nome); }
-      if(_ent){ var _inner=_ingressoInner(_ent,'var(--accent)',false); if(_inner) c+='<div style="margin-top:2px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;">'+_inner+'</div>'; }
-      var ft='';
-      if(nu) ft+='<a class="tt-btn tt-notion" href="'+escH(nu)+'" target="_blank" rel="noopener">'+icon('link')+' Ver no Notion '+icon('external-link')+'</a>';
-      if(emUrl){ var href=em.indexOf('http')===0?em:'https://'+em; ft+='<a class="tt-btn tt-emerg" href="'+escH(href)+'" target="_blank" rel="noopener">'+icon('siren')+' Emergência</a>'; }
-      if(r.parceiro) ft+='<span class="tt-parc">'+icon('handshake')+' '+escH(r.parceiro)+'</span>';
-      if(ft) c+='<div class="tt-foot">'+ft+'</div>';
-      c+='</div>';
-      h+=c;
+      h+=_tourCardHTML(r);
     });
   });
   h+='</div>'; box.innerHTML=h;
@@ -1553,10 +1709,21 @@ async function carregarPostos(){
   let h='<div class="view-toolbar"><h2>Postos Médicos</h2></div><div class="hubsec">';
   if(!rows.length){ h+='<div class="embreve">'+icon('shield')+'<h3>Sem postos</h3><p>Nenhum posto cadastrado no HUB.</p></div></div>'; area.innerHTML=h; return; }
   const g=_grupoPorDestino(rows);
-  Object.keys(g).sort().forEach(function(d){
-    h+='<div class="hub-dgroup"><h3>'+icon('map-pin')+' '+escH(d)+'</h3><table class="utable"><thead><tr><th>Nome</th><th>Endereço</th><th>Telefone</th><th>Horário</th></tr></thead><tbody>';
-    g[d].forEach(function(r){ h+='<tr><td style="color:var(--text);font-weight:600">'+escH(r.nome||'—')+'</td><td>'+escH(r.endereco||'—')+'</td><td>'+icon('phone')+escH(r.telefone||'—')+'</td><td>'+icon('clock')+escH(r.horario||'—')+'</td></tr>'; });
-    h+='</tbody></table></div>';
+  Object.keys(g).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); }).forEach(function(d){
+    const n=g[d].length;
+    h+='<div class="tt-ghead"><span class="tt-bar"></span><span class="tt-gname">'+escH(d)+'</span><span class="tt-gcount">'+n+(n===1?' posto':' postos')+'</span></div>';
+    h+='<div class="tt-grid">';
+    g[d].forEach(function(r){
+      var c='<div class="tt-card"><div class="tt-name">'+icon('shield')+' '+escH(r.nome||'—')+'</div>';
+      var at='';
+      if(r.endereco) at+='<div class="tt-attr">'+icon('map-pin')+'<span>'+escH(r.endereco)+'</span></div>';
+      if(r.telefone) at+='<div class="tt-attr">'+icon('phone')+'<span><strong>Telefone:</strong> '+escH(r.telefone)+'</span></div>';
+      if(r.horario) at+='<div class="tt-attr">'+icon('clock')+'<span><strong>Horário:</strong> '+escH(r.horario)+'</span></div>';
+      if(at) c+='<div class="tt-attrs">'+at+'</div>';
+      c+='</div>';
+      h+=c;
+    });
+    h+='</div>';
   });
   h+='</div>'; area.innerHTML=h;
 }
