@@ -872,7 +872,6 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
       <!-- placeholders -->
       <div class="view" id="view-destinos"></div>
       <div class="view" id="view-tours"></div>
-      <div class="view" id="view-postos"></div>
       <div class="view" id="view-repo"></div>
       <div class="view" id="view-usuarios"></div>
       <div class="view" id="view-faq"></div>
@@ -1078,7 +1077,7 @@ async function fazerLogin(){
   }catch(ex){ err.textContent='Erro: '+(ex.message||ex); btn.disabled=false; }
 }
 
-var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',recolhida:'Recolhida',ferramentas:'Ferramentas',repo:'Repositório',usuarios:'Usuários'};
+var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',recolhida:'Recolhida',ferramentas:'Ferramentas',repo:'Repositório',usuarios:'Usuários'};
 function setAreaTitle(v){ var el=document.getElementById('areaTitle'); if(el) el.textContent=AREA_TITULOS[v]||''; }
 var _areaClockTimer=null;
 function startAreaClock(){ if(_areaClockTimer) return; var tick=function(){ var el=document.getElementById('areaClockT'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }; tick(); _areaClockTimer=setInterval(tick,1000); }
@@ -1155,7 +1154,6 @@ function renderNav(){
   h+='<button class="nav-item'+(currentView==='faq'?' active':'')+'" onclick="irView(\'faq\')">'+icon('circle-help')+' FAQ</button>';
   h+='<button class="nav-item'+(currentView==='destinos'?' active':'')+'" onclick="irView(\'destinos\')">'+icon('mountain')+' Destinos Operados</button>';
   h+='<button class="nav-item'+(currentView==='tours'?' active':'')+'" onclick="irView(\'tours\')">'+icon('route')+' Links dos Tours</button>';
-  h+='<button class="nav-item'+(currentView==='postos'?' active':'')+'" onclick="irView(\'postos\')">'+icon('shield')+' Postos Médicos</button>';
   h+='<button class="nav-item'+(currentView==='recolhida'?' active':'')+'" onclick="irView(\'recolhida\')">'+icon('map-pin')+' Recolhida</button>';
   h+='<div class="nav-section">Recursos</div>';
   h+='<button class="nav-item'+(currentView==='ferramentas'?' active':'')+'" onclick="irView(\'ferramentas\')">'+icon('link')+' Ferramentas</button>';
@@ -1176,7 +1174,6 @@ function irView(v){
   if(v==='faq') carregarFaq();
   if(v==='destinos') carregarDestinos();
   if(v==='tours') carregarToursValores();
-  if(v==='postos') carregarPostos();
   if(v==='recolhida') carregarRecolhida();
   if(v==='ferramentas') carregarFerramentas();
   if(v==='repo') carregarRepo();
@@ -1361,7 +1358,6 @@ async function carregarAvisos(){
 function renderEmBreve(v){
   const map={ destinos:['mountain','Destinos Operados','Ficha dos destinos (horários, ponto de encontro, parceiro) — vem do HUB via FDW.'],
     tours:['route','Links dos Tours','Ingressos e links de cada tour — espelhados do HUB via FDW.'],
-    postos:['shield','Postos Médicos','Postos médicos por destino — espelhados do HUB via FDW.'],
     repo:['folder','Links Úteis / Repositório','Links e arquivos (PDF, planilha, imagem) com upload — próxima etapa.'] };
   const m=map[v]; document.getElementById('view-'+v).innerHTML='<div class="embreve">'+icon(m[0])+'<h3>'+m[1]+'</h3><p>'+m[2]+'</p></div>';
 }
@@ -2024,7 +2020,6 @@ async function carregarInicio(){
         + _homeCard('circle-help','FAQ',"irView('faq')")
         + _homeCard('mountain','Destinos',"irView('destinos')")
         + _homeCard('route','Links dos Tours',"irView('tours')")
-        + _homeCard('shield','Postos Médicos',"irView('postos')")
         + _homeCard('folder','Repositório',"irView('repo')")
         + (isAdmin()?_homeCard('users','Usuários',"irView('usuarios')"):'')
       +'</div>'
