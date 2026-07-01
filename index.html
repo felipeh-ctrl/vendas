@@ -1811,9 +1811,10 @@ async function carregarUsuarios(){
 function _fillPapelSelect(current){
   var sel=document.getElementById('usPapel'); if(!sel) return;
   var opts=[['vendedor','Vendedor'],['admin','Admin'],['espectador','Espectador']];
-  if(isMaster()) opts.unshift(['master','Master']);
   var h=''; opts.forEach(function(o){ h+='<option value="'+o[0]+'"'+(o[0]===current?' selected':'')+'>'+o[1]+'</option>'; });
-  if(current==='master' && !isMaster()){ h='<option value="master" selected>Master</option>'+h; }
+  // Master nunca e uma opcao escolhivel. So e fixado (travado) quando o
+  // registro editado JA e master — evita rebaixar o master sem querer ao salvar.
+  if(current==='master'){ h='<option value="master" selected>Master</option>'+h; }
   sel.innerHTML=h;
 }
 function abrirNovoUser(){
