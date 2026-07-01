@@ -414,6 +414,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .papel-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:var(--r-full)}
 .papel-admin{background:rgba(207,101,20,.15);color:var(--orange-l)}
 .papel-master{background:var(--accent);color:#080808}
+/* Avisos: curtir, formatação, prévia, home D */
+.aviso-foot{display:flex;align-items:center;gap:10px;margin-top:10px}
+.aviso-autor{font-size:11px;color:var(--text3);flex:1;min-width:0}
+.aviso-acts{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.curtir-btn{display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 11px;border-radius:20px;font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .15s}
+.curtir-btn:hover{border-color:var(--accent);color:var(--orange-l)}
+.curtir-btn.on{background:rgba(207,101,20,.14);border-color:var(--accent);color:var(--orange-l)}
+.av-toolbar{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.av-toolbar button{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:7px;padding:5px 10px;font-size:13px;font-family:var(--font);cursor:pointer;min-width:32px}
+.av-toolbar button:hover{border-color:var(--accent);color:var(--orange-l)}
+.av-preview-label{font-size:11px;color:var(--text3);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.av-preview{background:var(--surface);border:1px dashed var(--border2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text2);min-height:20px;line-height:1.55}
+.av-preview:empty::before{content:'(a prévia aparece aqui)';color:var(--text3)}
+.home-aviso{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:6px;cursor:pointer}
+.home-aviso.novo{border-color:var(--accent)}
+.home-hub{font-size:10px;font-weight:700;color:var(--blue);background:rgba(79,159,224,.14);padding:2px 8px;border-radius:20px}
+.home-sec{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:2px 2px 7px}
+.home-sec.novo-sec{color:var(--accent)}
+.home-sec.lido-sec{color:var(--text3);margin-top:14px}
 .papel-vendedor{background:rgba(59,130,246,.15);color:var(--blue-l)}
 .papel-espectador{background:var(--surface3);color:var(--text3)}
 .st-inativo{color:var(--text3)}
@@ -518,6 +537,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <path d="M3 6h18" />
   <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol>
 <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+<symbol id="ic-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.5 4.04 3 5.5l7 7Z" /></symbol>
 <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18 6 6 18" />
   <path d="m6 6 12 12" /></symbol>
 <symbol id="ic-plane" viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" /></symbol>
@@ -875,7 +895,18 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
 <div class="modal-overlay" id="modalAviso"><div class="modal" style="max-width:520px">
   <h2 id="avTit">Novo aviso</h2>
   <div class="form-group"><label>Título</label><input id="avTitulo"></div>
-  <div class="form-group"><label>Texto</label><textarea id="avTexto"></textarea></div>
+  <div class="form-group"><label>Texto</label>
+    <div class="av-toolbar">
+      <button type="button" onclick="_fmtAviso('b')" title="Negrito"><b>B</b></button>
+      <button type="button" onclick="_fmtAviso('i')" title="Itálico"><i>I</i></button>
+      <button type="button" onclick="_fmtAviso('u')" title="Sublinhado"><u>U</u></button>
+      <button type="button" onclick="_fmtAviso('li')" title="Lista">&bull; Lista</button>
+      <button type="button" onclick="_fmtAviso('br')" title="Quebra de linha">&crarr;</button>
+    </div>
+    <textarea id="avTexto" oninput="_avisoPreview()"></textarea>
+    <div class="av-preview-label">Prévia</div>
+    <div id="avPreview" class="av-preview"></div>
+  </div>
   <div class="row">
     <label class="chk"><input type="checkbox" id="avFixado"> Fixar no topo</label>
     <div class="form-group" style="max-width:130px"><label>Status</label><select id="avStatus"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
@@ -1221,6 +1252,51 @@ async function _fetchHubAvisos(){
   try{ const { data, error } = await sbHub.from('vw_vendas_avisos').select('*').order('created_at',{ascending:false}); if(error) throw error; return data||[]; }
   catch(e){ return []; }
 }
+var _curtidas=new Set(); var _curtidasCount={}; var _curtidasQuem={};
+async function _carregarCurtidas(){
+  try{
+    var r=await sb.from('avisos_curtidas').select('usuario,aviso_key');
+    if(r.error||!r.data){ _curtidas=new Set(); _curtidasCount={}; _curtidasQuem={}; return; }
+    var mine=new Set(), cnt={}, quem={};
+    var meu=currentUser?currentUser.username:null;
+    r.data.forEach(function(x){
+      cnt[x.aviso_key]=(cnt[x.aviso_key]||0)+1;
+      (quem[x.aviso_key]=quem[x.aviso_key]||[]).push(x.usuario);
+      if(x.usuario===meu) mine.add(x.aviso_key);
+    });
+    _curtidas=mine; _curtidasCount=cnt; _curtidasQuem=quem;
+  }catch(e){ _curtidas=new Set(); _curtidasCount={}; _curtidasQuem={}; }
+}
+async function toggleCurtir(key){
+  if(!currentUser) return;
+  var liked=_curtidas.has(key);
+  try{
+    if(liked){ var r=await sb.from('avisos_curtidas').delete().eq('usuario',currentUser.username).eq('aviso_key',key); if(r.error) throw r.error; }
+    else { var r2=await sb.from('avisos_curtidas').insert({usuario:currentUser.username,aviso_key:key}); if(r2.error) throw r2.error; }
+    await _carregarCurtidas(); carregarAvisos();
+  }catch(ex){ showToast('Erro ao curtir: '+(ex.message||ex)); }
+}
+function _avisoHTML(s){
+  if(s==null) return '';
+  var t=String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t=t.replace(/&amp;nbsp;/gi,'&nbsp;');
+  t=t.replace(/&lt;(\/?)(b|strong|i|em|u|p|ul|ol|li)&gt;/gi,'<$1$2>');
+  t=t.replace(/&lt;br\s*\/?&gt;/gi,'<br>');
+  t=t.replace(/&lt;a href="(https?:\/\/[^"]+)"&gt;/gi,'<a href="$1" target="_blank" rel="noopener">');
+  t=t.replace(/&lt;\/a&gt;/gi,'</a>');
+  t=t.replace(/\n/g,'<br>');
+  return t;
+}
+function _fmtAviso(tag){
+  var ta=document.getElementById('avTexto'); if(!ta) return;
+  var s=ta.selectionStart, e=ta.selectionEnd, val=ta.value, sel=val.substring(s,e);
+  if(tag==='br'){ ta.value=val.substring(0,s)+'<br>\n'+val.substring(e); ta.focus(); ta.selectionStart=ta.selectionEnd=s+5; _avisoPreview(); return; }
+  if(tag==='li'){ var lines=(sel||'item').split(/\n/).map(function(l){return '<li>'+l+'</li>';}).join(''); var ins='<ul>'+lines+'</ul>'; ta.value=val.substring(0,s)+ins+val.substring(e); ta.focus(); _avisoPreview(); return; }
+  var open='<'+tag+'>', close='</'+tag+'>';
+  ta.value=val.substring(0,s)+open+sel+close+val.substring(e);
+  ta.focus(); ta.selectionStart=s+open.length; ta.selectionEnd=e+open.length; _avisoPreview();
+}
+function _avisoPreview(){ var el=document.getElementById('avPreview'); if(el) el.innerHTML=_avisoHTML(document.getElementById('avTexto').value); }
 async function carregarAvisos(){
   const area=document.getElementById('avisosArea');
   area.innerHTML='<div class="loading">Carregando avisos...</div>';
@@ -1231,6 +1307,7 @@ async function carregarAvisos(){
     ]);
     if(va.error) throw va.error;
     _avisos = va.data||[];
+    await _carregarCurtidas();
     const merged = _avisos.map(function(a){ return Object.assign({_origem:'vendas'}, a); })
       .concat((hub||[]).map(function(m){ return {_origem:'hub', id:'hub_'+m.id, titulo:m.titulo, texto:m.texto, autor:m.autor, created_at:m.created_at, fixado:false}; }));
     merged.sort(function(a,b){ return (b.fixado?1:0)-(a.fixado?1:0) || (new Date(b.created_at)-new Date(a.created_at)); });
@@ -1241,7 +1318,10 @@ async function carregarAvisos(){
       const isHub=a._origem==='hub';
       const selo=isHub?('<span class="selo-hub">'+icon('plane')+' HUB</span>'):'';
       const acoes=(!isHub && isAdmin())?('<div class="urow-acts"><button class="btn-mini" onclick="abrirEditarAviso('+a.id+')">'+icon('pencil')+'</button><button class="btn-mini del" onclick="excluirAviso('+a.id+')">'+icon('trash-2')+'</button></div>'):'';
-      h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div>'+selo+'</div><div class="card-text expanded">'+escH(a.texto)+'</div><div style="display:flex;align-items:center;margin-top:6px"><div style="font-size:11px;color:var(--text3);flex:1">'+escH(a.autor||'')+(isHub?' \u00b7 via HUB':'')+'</div>'+acoes+'</div></div>';
+      var _k=String(a.id); var _liked=_curtidas.has(_k); var _cnt=_curtidasCount[_k]||0; var _quem=_curtidasQuem[_k]||[];
+      var _ct=(isAdmin()&&_quem.length)?(' title="Curtido por: '+_attrEsc(_quem.join(', '))+'"'):'';
+      var _curtirBtn='<button class="curtir-btn'+(_liked?' on':'')+'"'+_ct+' onclick="toggleCurtir(\''+_k+'\')">'+icon('heart')+' '+(_liked?'Curtido':'Curtir')+(_cnt?' \u00b7 '+_cnt:'')+'</button>';
+      h+='<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">'+(a.fixado?icon('bell')+' ':'')+escH(a.titulo)+'</div>'+selo+'</div><div class="card-text expanded">'+_avisoHTML(a.texto)+'</div><div class="aviso-foot"><div class="aviso-autor">'+escH(a.autor||'')+(isHub?' \u00b7 via HUB':'')+'</div><div class="aviso-acts">'+_curtirBtn+acoes+'</div></div></div>';
     });
     h+='</div>';
     area.innerHTML=h;
@@ -1483,8 +1563,8 @@ function excluirTpl(id){
 // AVISOS — CRUD (admin)
 // ============================================================
 let _avisos=[]; let _avisoEdit=null;
-function abrirNovoAviso(){ _avisoEdit=null; document.getElementById('avTit').textContent='Novo aviso'; document.getElementById('avTitulo').value=''; document.getElementById('avTexto').value=''; document.getElementById('avFixado').checked=false; document.getElementById('avStatus').value='ativo'; document.getElementById('modalAviso').classList.add('open'); }
-function abrirEditarAviso(id){ const a=_avisos.find(x=>x.id===id); if(!a)return; _avisoEdit=a; document.getElementById('avTit').textContent='Editar aviso'; document.getElementById('avTitulo').value=a.titulo; document.getElementById('avTexto').value=a.texto; document.getElementById('avFixado').checked=!!a.fixado; document.getElementById('avStatus').value=a.status||'ativo'; document.getElementById('modalAviso').classList.add('open'); }
+function abrirNovoAviso(){ _avisoEdit=null; document.getElementById('avTit').textContent='Novo aviso'; document.getElementById('avTitulo').value=''; document.getElementById('avTexto').value=''; document.getElementById('avFixado').checked=false; document.getElementById('avStatus').value='ativo'; _avisoPreview(); document.getElementById('modalAviso').classList.add('open'); }
+function abrirEditarAviso(id){ const a=_avisos.find(x=>x.id===id); if(!a)return; _avisoEdit=a; document.getElementById('avTit').textContent='Editar aviso'; document.getElementById('avTitulo').value=a.titulo; document.getElementById('avTexto').value=a.texto; document.getElementById('avFixado').checked=!!a.fixado; document.getElementById('avStatus').value=a.status||'ativo'; _avisoPreview(); document.getElementById('modalAviso').classList.add('open'); }
 async function salvarAviso(){
   const row={ titulo:document.getElementById('avTitulo').value.trim(), texto:document.getElementById('avTexto').value, fixado:document.getElementById('avFixado').checked, status:document.getElementById('avStatus').value, autor: currentUser?currentUser.nome:null };
   if(!row.titulo||!row.texto){ showToast('Preencha título e texto.'); return; }
@@ -1798,24 +1878,31 @@ function homeBuscar(){
 async function _homeCarregarAvisos(){
   var el=document.getElementById('home-avisos'); if(!el) return;
   try{
+    await _carregarCurtidas();
     var res=await Promise.all([
       sb.from('avisos_vendas').select('*').eq('status','ativo').order('fixado',{ascending:false}).order('created_at',{ascending:false}),
       _fetchHubAvisos()
     ]);
     var v=(res[0]&&res[0].data)||[]; var hub=res[1]||[];
-    var all=v.map(function(a){ return {titulo:a.titulo,created_at:a.created_at,fixado:!!a.fixado,hub:false}; })
-      .concat(hub.map(function(a){ return {titulo:a.titulo,created_at:a.created_at,fixado:false,hub:true}; }));
+    var all=v.map(function(a){ return {key:String(a.id),titulo:a.titulo,created_at:a.created_at,fixado:!!a.fixado,hub:false}; })
+      .concat(hub.map(function(a){ return {key:'hub_'+a.id,titulo:a.titulo,created_at:a.created_at,fixado:false,hub:true}; }));
     all.sort(function(a,b){ if(a.fixado&&!b.fixado) return -1; if(!a.fixado&&b.fixado) return 1; return new Date(b.created_at)-new Date(a.created_at); });
-    all=all.slice(0,4);
-    if(!all.length){ el.innerHTML='<div style="font-size:13px;color:var(--text3);padding:6px 2px">Nenhum aviso no momento.</div>'; return; }
-    el.innerHTML=all.map(function(a){
+    var novos=all.filter(function(a){ return !_curtidas.has(a.key); }).slice(0,5);
+    var lidos=all.filter(function(a){ return _curtidas.has(a.key); }).slice(0,3);
+    if(!novos.length && !lidos.length){ el.innerHTML='<div style="font-size:13px;color:var(--text3);padding:6px 2px">Nenhum aviso no momento.</div>'; return; }
+    var row=function(a,isNovo){
       var dt=a.created_at?new Date(a.created_at).toLocaleDateString('pt-BR'):'';
-      return '<div onclick="irView(\'avisos\')" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:6px;cursor:pointer">'
-        +'<span style="color:var(--accent)">'+icon('bell')+'</span>'
-        +'<span style="flex:1;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escH(a.titulo||'(sem título)')+'</span>'
-        +(a.hub?'<span style="font-size:10px;font-weight:700;color:#4f9fe0;background:#4f9fe026;padding:2px 8px;border-radius:20px">HUB</span>':'')
+      return '<div onclick="irView(\'avisos\')" class="home-aviso'+(isNovo?' novo':'')+'">'
+        +'<span style="color:'+(isNovo?'var(--accent)':'var(--text3)')+'">'+icon('bell')+'</span>'
+        +'<span style="flex:1;min-width:0;font-size:13px;font-weight:'+(isNovo?'700':'400')+';color:'+(isNovo?'var(--text)':'var(--text2)')+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escH(a.titulo||'(sem título)')+'</span>'
+        +(a.hub?'<span class="home-hub">HUB</span>':'')
+        +(isNovo?'':'<span style="color:var(--text3)">'+icon('check')+'</span>')
         +'<span style="font-size:11px;color:var(--text3);white-space:nowrap">'+dt+'</span></div>';
-    }).join('');
+    };
+    var h='';
+    if(novos.length){ h+='<div class="home-sec novo-sec">Novos</div>'+novos.map(function(a){return row(a,true);}).join(''); }
+    if(lidos.length){ h+='<div class="home-sec lido-sec">Já lidos</div>'+lidos.map(function(a){return row(a,false);}).join(''); }
+    el.innerHTML=h;
   }catch(e){ el.innerHTML='<div style="font-size:13px;color:var(--text3);padding:6px 2px">Não foi possível carregar os avisos agora.</div>'; }
 }
 
