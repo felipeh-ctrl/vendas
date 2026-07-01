@@ -199,6 +199,32 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .btn-modal-save:hover{background:var(--accent2)}
 .btn-modal-cancel{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:10px 18px;border-radius:var(--r);cursor:pointer;font-size:.875rem;font-family:var(--font)}
 .btn-modal-cancel:hover{border-color:var(--accent);color:var(--orange-l)}
+/* Ferramentas (Links Úteis) */
+.fer-sec{margin-bottom:26px}
+.fer-sec-title{display:flex;align-items:center;gap:8px;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:12px}
+.fer-sec-title .ic{color:var(--accent)}
+.fer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.fer-card{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--text);transition:all .15s;cursor:pointer}
+.fer-card:hover{border-color:var(--accent);background:var(--surface2);transform:translateY(-1px)}
+.fer-card.fer-tel{cursor:default}
+.fer-card.fer-tel:hover{transform:none;border-color:var(--border);background:var(--surface)}
+.fer-ic{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surface3);border-radius:10px;color:var(--accent)}
+.fer-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fer-name{font-size:.9rem;font-weight:700;color:var(--text)}
+.fer-desc{font-size:.75rem;color:var(--text3)}
+.fer-arrow{color:var(--text3);flex-shrink:0}
+.fer-card:hover .fer-arrow{color:var(--accent)}
+/* Meu perfil */
+.perfil-avatar-prev{width:88px;height:88px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;background-size:cover;background-position:center;box-shadow:0 0 0 3px var(--surface2),0 0 0 4px var(--border2)}
+/* Modal de aniversário */
+.aniv-modal{padding:0;overflow:hidden}
+.aniv-hero{background:linear-gradient(135deg,var(--accent) 0%,#f59e0b 55%,#f472b6 100%);padding:30px 20px 22px}
+.aniv-emoji{font-size:56px;line-height:1;margin-bottom:4px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28))}
+.aniv-pessoa{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 0}
+.aniv-pessoa+.aniv-pessoa{border-top:1px solid var(--border);margin-top:4px}
+.aniv-ava{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#080808;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;background-size:cover;background-position:center;box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--accent);margin-bottom:2px}
+.aniv-nome{font-size:1.05rem;font-weight:800;color:var(--text)}
+.aniv-msg{font-size:.85rem;color:var(--text2)}
 
 /* PASSWORD MODAL */
 .pwd-modal{max-width:360px;text-align:center}
@@ -764,6 +790,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
     <div class="sidebar-footer">
       <div class="profile-menu" id="profileMenu">
         <div class="pm-head"><div class="pm-name" id="pmNome">—</div><div class="pm-sub" id="pmSub">—</div></div>
+        <button class="pm-item" onclick="abrirPerfil()"><span class="ic"><svg><use href="#ic-user"/></svg></span> Meu perfil</button>
         <button class="pm-item" onclick="alternarTema()"><span class="ic"><svg><use href="#ic-moon"/></svg></span> Tema <span class="pm-toggle" id="temaLabel"><span class="ic"><svg><use href="#ic-moon"/></svg></span> Escuro</span></button>
         <button class="pm-item" onclick="abrirTrocarSenha()"><span class="ic"><svg><use href="#ic-key"/></svg></span> Trocar minha senha</button>
         <button class="pm-item danger" onclick="fazerLogout()"><span class="ic"><svg><use href="#ic-log-out"/></svg></span> Sair</button>
@@ -804,6 +831,7 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
       <div class="view" id="view-repo"></div>
       <div class="view" id="view-usuarios"></div>
       <div class="view" id="view-faq"></div>
+      <div class="view" id="view-ferramentas"></div>
     </div>
   </div>
 </div>
@@ -873,6 +901,26 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalConf')">Cancelar</button><button class="btn-confirm-delete" onclick="_confExec()">Confirmar</button></div>
 </div></div>
 
+
+<div class="modal-overlay" id="modalPerfil"><div class="modal" style="max-width:420px">
+  <h2 style="display:flex;align-items:center;gap:8px"><span class="ic"><svg><use href="#ic-user"/></svg></span> Meu perfil</h2>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin:8px 0 20px">
+    <div id="perfilAvatarPrev" class="perfil-avatar-prev">--</div>
+    <input type="file" id="perfilFotoInput" accept="image/*" style="display:none" onchange="_perfilFotoSel(event)">
+    <div style="display:flex;gap:8px">
+      <button class="btn-modal-cancel" onclick="document.getElementById('perfilFotoInput').click()"><span class="ic"><svg><use href="#ic-image"/></svg></span> Escolher foto</button>
+      <button class="btn-modal-cancel" id="perfilRemoveFoto" onclick="_perfilRemoveFoto()" style="display:none">Remover</button>
+    </div>
+  </div>
+  <div class="form-group"><label>Data de nascimento</label><input type="date" id="perfilNasc"></div>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalPerfil')">Cancelar</button><button class="btn-modal-save" onclick="salvarPerfil()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="modalAniv"><div class="modal aniv-modal" style="max-width:420px;text-align:center">
+  <div class="aniv-hero"><div class="aniv-emoji">🎂</div><h2 id="anivTitulo" style="margin:0;color:#fff">Aniversário hoje!</h2></div>
+  <div id="anivBody" style="padding:18px 24px 4px"></div>
+  <div style="padding:14px 24px 22px"><button class="btn-modal-save" style="width:100%" onclick="fecharModal('modalAniv')">🎉 Fechar</button></div>
+</div></div>
 
 <div class="modal-overlay" id="modalFaq"><div class="modal" style="max-width:560px">
   <h2 style="display:flex;align-items:center;gap:8px"><span class="ic"><svg><use href="#ic-circle-help"/></svg></span> <span id="faqModalTitle">Novo tópico</span></h2>
@@ -971,7 +1019,7 @@ async function fazerLogin(){
   }catch(ex){ err.textContent='Erro: '+(ex.message||ex); btn.disabled=false; }
 }
 
-var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',repo:'Repositório',usuarios:'Usuários'};
+var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',ferramentas:'Ferramentas',repo:'Repositório',usuarios:'Usuários'};
 function setAreaTitle(v){ var el=document.getElementById('areaTitle'); if(el) el.textContent=AREA_TITULOS[v]||''; }
 var _areaClockTimer=null;
 function startAreaClock(){ if(_areaClockTimer) return; var tick=function(){ var el=document.getElementById('areaClockT'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }; tick(); _areaClockTimer=setInterval(tick,1000); }
@@ -1009,7 +1057,7 @@ async function entrarApp(){
   const email = session.user.email;
   const { data: me } = await sb.from('vendas_auth').select('*').eq('auth_email', email).maybeSingle();
   if(!me || me.status!=='ativo'){ await sb.auth.signOut(); document.getElementById('liErr').textContent='Acesso inativo. Fale com um admin.'; document.getElementById('liBtn').disabled=false; return; }
-  currentUser = { username: me.username, nome: me.nome, papel: me.papel, auth_email: email };
+  currentUser = { username: me.username, nome: me.nome, papel: me.papel, auth_email: email, foto: me.foto||null, nascimento: me.nascimento||null };
   // perfil UI
   document.getElementById('profileNome').textContent = me.nome;
   document.getElementById('pmNome').textContent = me.nome;
@@ -1019,6 +1067,7 @@ async function entrarApp(){
   const av=document.getElementById('profileAvatar');
   av.textContent=(me.nome||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();
   av.classList.toggle('admin', me.papel==='admin');
+  _aplicarAvatar();
   // mostra app
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
@@ -1026,6 +1075,7 @@ async function entrarApp(){
   carregarTemplates();
   carregarInicio();
   startAreaClock(); setAreaTitle('inicio'); iniciarPresence();
+  checarAniversarios();
 }
 
 async function fazerLogout(){ await sb.auth.signOut(); location.reload(); }
@@ -1040,14 +1090,15 @@ function renderNav(){
   var h='';
   h+='<div class="nav-section">Principal</div>';
   h+='<button class="nav-item'+(currentView==='inicio'?' active':'')+'" onclick="irView(\'inicio\')">'+icon('home')+' Início</button>';
-  h+='<button class="nav-item'+(currentView==='templates'?' active':'')+'" onclick="irTemplates(null,null)">'+icon('layout-grid')+' Templates</button>';
   h+='<button class="nav-item'+(currentView==='avisos'?' active':'')+'" onclick="irView(\'avisos\')">'+icon('bell')+' Avisos</button>';
+  h+='<div class="nav-section">Consulta</div>';
+  h+='<button class="nav-item'+(currentView==='templates'?' active':'')+'" onclick="irTemplates(null,null)">'+icon('layout-grid')+' Templates</button>';
   h+='<button class="nav-item'+(currentView==='faq'?' active':'')+'" onclick="irView(\'faq\')">'+icon('circle-help')+' FAQ</button>';
-  h+='<div class="nav-section">Consulta (HUB)</div>';
   h+='<button class="nav-item'+(currentView==='destinos'?' active':'')+'" onclick="irView(\'destinos\')">'+icon('mountain')+' Destinos Operados</button>';
   h+='<button class="nav-item'+(currentView==='tours'?' active':'')+'" onclick="irView(\'tours\')">'+icon('route')+' Links dos Tours</button>';
   h+='<button class="nav-item'+(currentView==='postos'?' active':'')+'" onclick="irView(\'postos\')">'+icon('shield')+' Postos Médicos</button>';
   h+='<div class="nav-section">Recursos</div>';
+  h+='<button class="nav-item'+(currentView==='ferramentas'?' active':'')+'" onclick="irView(\'ferramentas\')">'+icon('link')+' Ferramentas</button>';
   h+='<button class="nav-item'+(currentView==='repo'?' active':'')+'" onclick="irView(\'repo\')">'+icon('folder')+' Repositório</button>';
   if(isAdmin()){ h+='<div class="nav-section">Administração</div>'; h+='<button class="nav-item'+(currentView==='usuarios'?' active':'')+'" onclick="irView(\'usuarios\')">'+icon('users')+' Usuários</button>'; }
   document.getElementById('nav').innerHTML=h;
@@ -1066,6 +1117,7 @@ function irView(v){
   if(v==='destinos') carregarDestinos();
   if(v==='tours') carregarToursValores();
   if(v==='postos') carregarPostos();
+  if(v==='ferramentas') carregarFerramentas();
   if(v==='repo') carregarRepo();
   if(v==='usuarios') carregarUsuarios();
 }
@@ -1213,6 +1265,113 @@ function _lblTema(){ const lbl=document.getElementById('temaLabel'); if(!lbl)ret
 function alternarTema(forcar){ _tema=forcar||(document.body.classList.contains('light-mode')?'escuro':'claro'); if(_tema==='claro')document.body.classList.add('light-mode'); else document.body.classList.remove('light-mode'); try{localStorage.setItem('fgtv_tema',_tema);}catch(e){} _lblTema(); }
 
 function abrirTrocarSenha(){ document.getElementById('novaSenha').value=''; document.getElementById('novaSenha2').value=''; document.getElementById('senhaErr').style.display='none'; document.getElementById('modalSenha').classList.add('open'); document.getElementById('profileMenu').classList.remove('open'); }
+
+function _iniciais(nome){ return (nome||'?').trim().split(/\s+/).map(function(x){return x[0];}).slice(0,2).join('').toUpperCase(); }
+
+// ---------- FERRAMENTAS (Links Úteis) ----------
+function carregarFerramentas(){
+  var area=document.getElementById('view-ferramentas'); if(!area) return;
+  var sistemas=[
+    {ic:'users',nome:'RD CRM',desc:'Entrada de Leads',url:'https://crm.rdstation.com/app/deals/pipeline'},
+    {ic:'file-text',nome:'SoftTur',desc:'Criar Orçamento',url:'https://fuigosteitrips.soft.tur.br/auth/default.aspx?ReturnUrl=%2fBase%2f'},
+    {ic:'layout-grid',nome:'Notion Intranet',desc:'Fui Gostei Trips',url:'https://app.notion.com/p/fuigosteitrips/Fui-Gostei-Trips-Intranet-6705d691798e424cacfcbe878ba550d2'}
+  ];
+  var ferramentas=[
+    {ic:'banknote',nome:'Simulador de Parcelamento',desc:'',url:'https://docs.google.com/spreadsheets/d/1at_WSPVXr526H-b1jv8qHtQohJ8-idTrR2p8KOEjw9w/edit?pli=1&gid=711800012#gid=711800012'},
+    {ic:'tag',nome:'Taxas para Parcelamento',desc:'Passo a passo',url:'https://docs.google.com/document/d/1FizyYOeP1VLPHLGuV-pEu-HXqrDzDi__WM9lg9-7oCo/edit?tab=t.0'},
+    {ic:'clipboard-list',nome:'Catálogos de Passeios',desc:'',url:'https://fuigosteitrips.com.br/lps/catalogos/'},
+    {ic:'shield',nome:'Política de Cancelamento',desc:'',url:'https://drive.google.com/drive/folders/1wtOWf7_lmjSQpLyKHQkedFUx2-OwIv6h'},
+    {ic:'file-spreadsheet',nome:'ORCA 6.6',desc:'Privados',url:'https://docs.google.com/spreadsheets/d/11TRAb7DdBChUxgsk6MHkwvva_gT6ZUuSdfGUzRF0wys/edit?pli=1&gid=360811353#gid=360811353'}
+  ];
+  var card=function(x){ return '<a class="fer-card" href="'+_attrEsc(x.url)+'" target="_blank" rel="noopener"><span class="fer-ic">'+icon(x.ic,18)+'</span><span class="fer-info"><span class="fer-name">'+escH(x.nome)+'</span>'+(x.desc?('<span class="fer-desc">'+escH(x.desc)+'</span>'):'')+'</span><span class="fer-arrow">'+icon('external-link',15)+'</span></a>'; };
+  var sec=function(icn,titulo,itens){ return '<div class="fer-sec"><div class="fer-sec-title">'+icon(icn,16)+' '+escH(titulo)+'</div><div class="fer-grid">'+itens.map(card).join('')+'</div></div>'; };
+  var h='<div style="max-width:900px;margin:0 auto">';
+  h+='<p style="color:var(--text3);font-size:13px;margin:0 0 20px">Acesso rápido a sistemas, ferramentas e parceiros.</p>';
+  h+=sec('settings','Sistemas Internos',sistemas);
+  h+=sec('credit-card','Ferramentas de Venda',ferramentas);
+  h+='<div class="fer-sec"><div class="fer-sec-title">'+icon('briefcase',16)+' Parceiros</div><div class="fer-grid">';
+  h+='<div class="fer-card fer-tel"><span class="fer-ic">'+icon('plane',18)+'</span><span class="fer-info"><span class="fer-name">Kurti Trips</span><span class="fer-desc">Outros destinos e passagens · +55 21 99659-0350</span></span></div>';
+  h+='</div></div></div>';
+  area.innerHTML=h;
+}
+
+// ---------- MEU PERFIL ----------
+var _perfilFoto=null;
+function _aplicarAvatar(){
+  var av=document.getElementById('profileAvatar'); if(!av) return;
+  if(currentUser&&currentUser.foto){ av.style.backgroundImage='url('+currentUser.foto+')'; av.style.backgroundSize='cover'; av.style.backgroundPosition='center'; av.textContent=''; }
+  else { av.style.backgroundImage=''; av.textContent=_iniciais(currentUser?currentUser.nome:''); }
+}
+function abrirPerfil(){
+  document.getElementById('profileMenu').classList.remove('open');
+  _perfilFoto=(currentUser&&currentUser.foto)||null;
+  var prev=document.getElementById('perfilAvatarPrev');
+  if(_perfilFoto){ prev.style.backgroundImage='url('+_perfilFoto+')'; prev.textContent=''; document.getElementById('perfilRemoveFoto').style.display=''; }
+  else { prev.style.backgroundImage=''; prev.textContent=_iniciais(currentUser?currentUser.nome:''); document.getElementById('perfilRemoveFoto').style.display='none'; }
+  document.getElementById('perfilNasc').value=(currentUser&&currentUser.nascimento)?currentUser.nascimento:'';
+  document.getElementById('modalPerfil').classList.add('open');
+}
+function _perfilFotoSel(ev){
+  var file=ev.target.files&&ev.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var out=256, side=Math.min(img.width,img.height);
+      var sx=(img.width-side)/2, sy=(img.height-side)/2;
+      var cv=document.createElement('canvas'); cv.width=out; cv.height=out;
+      cv.getContext('2d').drawImage(img,sx,sy,side,side,0,0,out,out);
+      _perfilFoto=cv.toDataURL('image/jpeg',0.82);
+      var prev=document.getElementById('perfilAvatarPrev'); prev.style.backgroundImage='url('+_perfilFoto+')'; prev.textContent='';
+      document.getElementById('perfilRemoveFoto').style.display='';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function _perfilRemoveFoto(){
+  _perfilFoto=null;
+  var prev=document.getElementById('perfilAvatarPrev'); prev.style.backgroundImage=''; prev.textContent=_iniciais(currentUser?currentUser.nome:'');
+  document.getElementById('perfilRemoveFoto').style.display='none';
+  document.getElementById('perfilFotoInput').value='';
+}
+async function salvarPerfil(){
+  var nasc=document.getElementById('perfilNasc').value||null;
+  var r=await sb.from('vendas_auth').update({foto:_perfilFoto,nascimento:nasc}).eq('auth_email',currentUser.auth_email);
+  if(r.error){ showToast('Erro: '+r.error.message); return; }
+  currentUser.foto=_perfilFoto; currentUser.nascimento=nasc;
+  _aplicarAvatar();
+  fecharModal('modalPerfil'); showToast('Perfil salvo!');
+}
+
+// ---------- ANIVERSÁRIO ----------
+async function checarAniversarios(){
+  try{
+    var hoje=new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}); // YYYY-MM-DD
+    var mmdd=hoje.slice(5);
+    var flag='fgtv_bday_'+hoje;
+    try{ if(localStorage.getItem(flag)) return; }catch(e){}
+    var r=await sb.from('vendas_auth').select('nome,nascimento,foto,status');
+    if(r.error||!r.data) return;
+    var aniv=r.data.filter(function(u){ return u.status!=='inativo' && u.nascimento && String(u.nascimento).slice(5)===mmdd; });
+    if(!aniv.length) return;
+    try{ localStorage.setItem(flag,'1'); }catch(e){}
+    mostrarAniversario(aniv);
+  }catch(e){}
+}
+function mostrarAniversario(list){
+  var meNome=currentUser?currentUser.nome:'';
+  var h='';
+  list.forEach(function(u){
+    var ehVoce=(u.nome===meNome);
+    var av=u.foto?('<div class="aniv-ava" style="background-image:url('+u.foto+')"></div>'):('<div class="aniv-ava">'+escH(_iniciais(u.nome))+'</div>');
+    h+='<div class="aniv-pessoa">'+av+'<div class="aniv-nome">'+escH(u.nome)+'</div><div class="aniv-msg">'+(ehVoce?'Feliz aniversário! Que seu dia seja incrível 🎉':'Não esquece de dar os parabéns! 🥳')+'</div></div>';
+  });
+  document.getElementById('anivBody').innerHTML=h;
+  var so1=list.length===1;
+  document.getElementById('anivTitulo').textContent = so1 ? (list[0].nome===meNome?'Feliz aniversário!':'Aniversário hoje!') : 'Aniversariantes de hoje!';
+  document.getElementById('modalAniv').classList.add('open');
+}
 async function salvarNovaSenha(){
   const a=document.getElementById('novaSenha').value, b=document.getElementById('novaSenha2').value;
   const err=document.getElementById('senhaErr'); err.style.display='none';
