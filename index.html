@@ -714,6 +714,26 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <path d="M12 5v14" /></symbol>
 <symbol id="ic-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
   <path d="m21.854 2.147-10.94 10.939" /></symbol>
+<symbol id="ic-utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+  <path d="M7 2v20" />
+  <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" /></symbol>
+<symbol id="ic-shopping-bag" viewBox="0 0 24 24"><path d="M16 10a4 4 0 0 1-8 0" />
+  <path d="M3.103 6.034h17.794" />
+  <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></symbol>
+<symbol id="ic-car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+  <circle cx="7" cy="17" r="2" />
+  <path d="M9 17h6" />
+  <circle cx="17" cy="17" r="2" /></symbol>
+<symbol id="ic-hotel" viewBox="0 0 24 24"><path d="M10 22v-6.57" />
+  <path d="M12 11h.01" />
+  <path d="M12 7h.01" />
+  <path d="M14 15.43V22" />
+  <path d="M15 16a5 5 0 0 0-6 0" />
+  <path d="M16 11h.01" />
+  <path d="M16 7h.01" />
+  <path d="M8 11h.01" />
+  <path d="M8 7h.01" />
+  <rect x="4" y="2" width="16" height="20" rx="2" /></symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -903,7 +923,7 @@ const SB_HUB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const sbHub = supabase.createClient(SB_HUB_URL, SB_HUB_ANON, { auth: { persistSession: false, autoRefreshToken: false } });
 
 // ---------- helpers ----------
-function icon(name){ return '<span class="ic"><svg><use href="#ic-'+name+'"/></svg></span>'; }
+function icon(name,px){ return '<span class="ic"'+(px?(' style="font-size:'+px+'px"'):'')+'><svg><use href="#ic-'+name+'"/></svg></span>'; }
 function escH(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 function fecharModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -1782,15 +1802,503 @@ async function deletarSugestao(id){
   _faqSugs=_faqSugs.filter(function(x){return x.id!==id;}); renderSugestoes(); showToast('Excluído');
 }
 
+// ===== CONTEÚDO RICO DOS DESTINOS — portado do HUB (dados + render read-only) =====
+var _DEST_DEFAULTS = {
+  'Santiago': {
+    flag:'🇨🇱',
+    info:{
+      descricao:'Capital do Chile e principal porta de entrada do país. Destino urbano com neve próxima durante o inverno, misturando vida urbana, gastronomia, vinhos e montanhas.',
+      altitude:null, moeda:'Peso Chileno (CLP)', idioma:'Espanhol',
+      fuso:'1h a menos que Brasília (varia com horário de verão)',
+      voltagem:'220V — Tomadas C e L',
+      internet:'Excelente cobertura — Chips: WOM, Entel e Claro',
+      melhor_epoca:[
+        {periodo:'Jun–Set',desc:'Inverno — neve nas montanhas',tipo:'blue'},
+        {periodo:'Set–Nov',desc:'Primavera — clima agradável',tipo:'green'},
+        {periodo:'Dez–Mar',desc:'Verão — dias longos e vinícolas',tipo:'amber'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Valle Nevado','Farellones','Portillo','Cajón del Maipo','Embalse El Yeso','Vinícolas','City Tour','Valparaíso + Viña del Mar'],
+      pontos:['Sky Costanera','Cerro San Cristóbal','Plaza de Armas','Palacio La Moneda','Barrio Lastarria','Patio Bellavista','Costanera Center'],
+      experiencias:['Degustação em vinícolas','Neve no inverno','Pôr do sol na Cordilheira','Restaurantes panorâmicos']
+    },
+    gastronomia:{
+      tipicos:['Liguria','Galindo','Doña Tina'],
+      locais:['Fuente Alemana','La Picá de Jaime','José Ramón 277'],
+      turisticos:['Giratorio','Como Agua Para Chocolate','Mestizo'],
+      premium:['Boragó','Ambrosía','Osaka Santiago'],
+      cafes:['Café Colmado','Wonderland Café','Chipe Libre','Kross Bar']
+    },
+    compras:{
+      lembrancas:['Pueblito Los Dominicos','Patio Bellavista','Centro Artesanal Santa Lucía'],
+      shoppings:['Costanera Center','Parque Arauco','Alto Las Condes'],
+      produtos:['Vinhos','Pisco','Lapislázuli','Produtos andinos'],obs:[]
+    },
+    transporte:{
+      cidade:['Uber funciona normalmente','Cabify muito utilizado','Metrô excelente nas regiões turísticas','Táxi oficial — preferir no aeroporto','Transfer recomendado para neve','Trânsito intenso no pico'],
+      aeroporto:['Transfer compartilhado','Uber/Cabify','Táxi oficial','Ônibus Centropuerto e TurBus'],obs:[]
+    },
+    hospedagem:{
+      melhores:['Providencia','Las Condes','Lastarria','Vitacura'],
+      economicas:['Centro','Ñuñoa'],premium:['Vitacura','Las Condes'],
+      obs:['Evitar hospedagem muito afastada do metrô','No inverno preferir hotéis com aquecimento eficiente']
+    },
+    importante:{
+      geral:['Cidade relativamente segura nas regiões turísticas','Atenção com furtos em áreas movimentadas','Água da torneira é potável','Muitos locais aceitam cartão','Gorjeta padrão: 10% em restaurantes','Protetor solar mesmo no frio'],
+      atencao:['Parte do centro à noite','Estación Central','Áreas afastadas do eixo turístico'],
+      passageiro:[]
+    },
+    operacional:{
+      duvidas:['Neva em Santiago?','Precisa de roupa especial?','Farellones ou Valle Nevado?','Dá para usar Uber do aeroporto?'],
+      perfil:['Casais','Famílias','Primeira viagem internacional','Clientes que querem neve sem experiência extrema'],
+      upsells:['Vinícolas premium','Farellones + Valle Nevado','Upgrade hotéis em Las Condes','Restaurantes panorâmicos'],
+      combina:['Atacama','Mendoza','Patagônia','Uyuni']
+    },
+    contatos:{aeroporto:'Arturo Merino Benítez (SCL)',emergencias:{'Polícia':'133','Ambulância':'131','Bombeiros':'132'},apps:['Uber','Cabify','Red Movilidad','Metro de Santiago']}
+  },
+  'San Pedro de Atacama': {
+    flag:'🇨🇱',
+    info:{
+      descricao:'Vila turística no deserto mais árido do mundo. Principal base para explorar paisagens naturais do Atacama, focada em natureza, astronomia e experiências.',
+      altitude:'Aproximadamente 2.400m', moeda:'Peso Chileno (CLP)', idioma:'Espanhol',
+      fuso:'1h a menos que Brasília',voltagem:'220V — Tomadas C e L',
+      internet:'Funciona bem no centro — sinal limitado em passeios. Chips: Entel, WOM',
+      melhor_epoca:[
+        {periodo:'Ano inteiro',desc:'Destino disponível o ano todo',tipo:'green'},
+        {periodo:'Inverno',desc:'Noites extremamente frias',tipo:'blue'},
+        {periodo:'Verão',desc:'Possibilidade de chuvas altiplânicas',tipo:'amber'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Valle de la Luna','Geysers del Tatio','Lagunas Altiplânicas','Piedras Rojas','Laguna Cejar','Tour Astronômico','Salar de Atacama','Termas de Puritama','Ruta dos Salares'],
+      pontos:['Calle Caracoles','Igreja de San Pedro','Plaza de Armas','Valle de Marte','Miradores do deserto'],
+      experiencias:['Céu estrelado dos melhores do mundo','Flutuação na Laguna Cejar','Nascer do sol nos Geysers','Observação astronômica','Paisagens semelhantes a Marte']
+    },
+    gastronomia:{
+      tipicos:['Adobe','La Casona','Baltinache'],locais:['La Picada del Indio','Las Delicias de Carmen','Sol Inti'],
+      turisticos:['Blanco','Aura Andina','Ckunna'],premium:['Jardín Meraki','Primitivo','Pacha Bar & Restaurant'],
+      cafes:['Franchuteria','Café Peregrino','Cervecería St. Peter']
+    },
+    compras:{
+      lembrancas:['Feira artesanal local','Calle Caracoles','Mercado de artesanato atacamenho'],shoppings:[],
+      produtos:['Artesanato andino','Produtos de alpaca','Sal rosa','Pedras vulcânicas','Produtos em cobre','Lhamas decorativas'],
+      obs:['Muitas lojas fecham durante o almoço','Preços mais altos que outras regiões do Chile']
+    },
+    transporte:{
+      cidade:['Cidade pequena e caminhável','Passeios normalmente incluem transporte','Não há Uber funcionando regularmente','Táxis são limitados','Bicicletas são comuns'],
+      aeroporto:['Aeroporto mais próximo: Calama (CJC) — aprox. 1h15','Transfer compartilhado','Transfer privado','Carro alugado'],obs:[]
+    },
+    hospedagem:{
+      melhores:['Centro / Calle Caracoles','Próximo à Plaza de Armas'],economicas:['Áreas afastadas do centro'],
+      premium:['Hotéis no deserto','Lodges com experiência astronômica'],
+      obs:['Muitos hotéis sem ar-condicionado','Grande amplitude térmica: calor de dia e frio à noite','Confirmar aquecimento, café da manhã e oxigênio disponível']
+    },
+    importante:{
+      geral:['Destino de altitude — alguns passageiros sentem sintomas','Hidratação intensa e alimentação leve recomendadas','Protetor solar e hidratante indispensáveis','Clima extremamente seco','Noites abaixo de 0°C no inverno','Dinheiro em espécie ainda útil'],
+      atencao:[],
+      passageiro:['Passeios começam muito cedo','Esforço físico leve/moderado em muitos tours','Banheiros limitados em alguns passeios','Roupas em camadas são essenciais']
+    },
+    operacional:{
+      duvidas:['Como funciona a altitude?','Precisa tomar remédio?','Qual roupa levar?','Vale a pena carro alugado?','Quantos dias são ideais?'],
+      perfil:['Casais','Lua de mel','Natureza','Aventura leve','Fotografia','Experiências premium'],
+      upsells:['Hotel premium no deserto','Tour astronômico premium','Tours privativos','Spa/termas','Combinação com Uyuni'],
+      combina:['Uyuni','Santiago','Cusco','La Paz']
+    },
+    contatos:{aeroporto:'El Loa — Calama (CJC)',emergencias:{'Polícia':'133','Ambulância':'131','Bombeiros':'132'},apps:['Google Maps','WhatsApp','Maps.me','XE Currency','Ventusky']}
+  },
+  'Uyuni': {
+    flag:'🇧🇴',
+    info:{
+      descricao:'Principal porta de entrada para o maior salar do mundo. Região remota com estrutura simples, focada em expedições, paisagens extremas e experiências naturais.',
+      altitude:'Aproximadamente 3.650m',moeda:'Boliviano (BOB)',idioma:'Espanhol',
+      fuso:'1h a menos que Brasília',voltagem:'220V — Tomadas A e C',
+      internet:'Limitada e instável — sinal fraco em grande parte das rotas',
+      melhor_epoca:[
+        {periodo:'Dez–Mar',desc:'Efeito espelho — possibilidade de chuva',tipo:'blue'},
+        {periodo:'Abr–Nov',desc:'Clima seco — céu limpo — melhor para expedições',tipo:'green'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Salar de Uyuni Full Day','Expedição 2D/1N','Expedição 3D/2N','Travessia Uyuni → Atacama','Tour efeito espelho','Tour astronômico'],
+      pontos:['Salar de Uyuni','Isla Incahuasi','Monumento Dakar','Cemitério de Trens','Laguna Colorada','Laguna Verde','Deserto Siloli','Árbol de Piedra','Geysers Sol de Mañana'],
+      experiencias:['Fotos em perspectiva no salar','Dormir em hotel de sal','Céu estrelado surreal','Efeito espelho','Sunrise e sunset no salar']
+    },
+    gastronomia:{
+      tipicos:['Minuteman Pizza','Sal Negra','Kactus'],locais:['Pizzeria Donna Isabella','Restaurant 16 de Julio','Breakfast Nonis'],
+      turisticos:['Extreme Fun Pub','Arco Iris','Lithium Club'],premium:[],
+      cafes:['Café Bar Ranking','Wiphala Pub','Café Nonis'],obs:['Gastronomia simples','Poucas opções premium','Muitos restaurantes fecham cedo']
+    },
+    compras:{
+      lembrancas:['Artesanato andino','Produtos feitos de sal','Itens de lã de alpaca','Souvenirs do Dakar'],
+      shoppings:['Mercado Central de Uyuni','Feiras locais no centro'],produtos:['Roupas térmicas'],
+      obs:['Muitos locais aceitam apenas dinheiro','Cartão pode não funcionar','Poucos caixas eletrônicos']
+    },
+    transporte:{
+      cidade:['Cidade pequena — deslocamento a pé','Tours em veículos 4x4','Estradas podem ser difíceis e cansativas'],
+      aeroporto:['Avião via La Paz','Ônibus noturno','Travessia desde Atacama'],
+      obs:['Ônibus podem sofrer atrasos','Temperaturas muito baixas na madrugada']
+    },
+    hospedagem:{
+      melhores:['Centro de Uyuni','Hotéis próximos à saída dos tours'],economicas:[],
+      premium:['Hotel de Sal','Lodges no salar'],
+      obs:['Hotéis simples podem não ter aquecimento','Energia elétrica pode oscilar','Água quente limitada','Em expedições: hospedagens extremamente simples']
+    },
+    importante:{
+      geral:['Altitude elevada — possibilidade de soroche','Frio extremo durante madrugada/noite','Clima extremamente seco','Levar: hidratante, protetor solar, lip balm, roupas térmicas, óculos escuros','Internet praticamente inexistente em vários trechos'],
+      atencao:[],
+      passageiro:['Viagens longas e cansativas','Estrutura muito diferente de destinos tradicionais','Não indicado para passageiros exigentes em conforto','Banheiros podem ser extremamente simples nas expedições']
+    },
+    operacional:{
+      duvidas:['Quando acontece o efeito espelho?','A travessia para Atacama vale a pena?','Faz muito frio?','Como funciona a altitude?','Os hotéis têm banho quente?'],
+      perfil:['Aventura','Natureza extrema','Fotografia','Mochileiros','Experiências diferentes','Casais aventureiros'],
+      upsells:['Hotel de sal premium','Tour privativo','Sunrise/sunset exclusivo','Travessia premium Uyuni → Atacama','Quarto privativo nas expedições'],
+      combina:['Atacama','La Paz','Cusco','Santiago']
+    },
+    contatos:{aeroporto:'Joya Andina Airport (UYU)',emergencias:{'Polícia':'110','Ambulância':'118','Bombeiros':'119'},apps:['Maps.me','WhatsApp','XE Currency','Google Translate','Ventusky']}
+  },
+  'La Paz': {
+    flag:'🇧🇴',
+    info:{
+      descricao:'Capital administrativa da Bolívia e uma das cidades mais altas do mundo. Mistura de modernidade, tradição indígena e aventura.',
+      altitude:'Aproximadamente 3.600m a 4.100m',moeda:'Boliviano (BOB)',idioma:'Espanhol e Aimará',
+      fuso:'1h a menos que Brasília',voltagem:'220V — Tomadas A e C',
+      internet:'Boa nas áreas urbanas — Chips: Entel, Tigo',
+      melhor_epoca:[
+        {periodo:'Abr–Out',desc:'Clima seco — céu limpo',tipo:'green'},
+        {periodo:'Nov–Mar',desc:'Período de chuvas',tipo:'amber'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Valle de la Luna','Chacaltaya','Tiwanaku','Teleféricos de La Paz','Death Road','Copacabana + Isla del Sol'],
+      pontos:['Plaza Murillo','Calle Jaén','Mercado de las Brujas','Mirador Killi Killi','Igreja San Francisco','Mi Teleférico'],
+      experiencias:['Passeio nos teleféricos urbanos','Mercado das Bruxas','Estrada da Morte de bike','Vista do Illimani','Cultura indígena boliviana']
+    },
+    gastronomia:{
+      tipicos:["Bolivian Popular Food","Manq'a","Restaurant Vienna"],locais:['Typica Café','Popular Cocina Boliviana','Ali Pacha'],
+      turisticos:['Hard Rock Café La Paz','The Steakhouse','Café del Mundo'],premium:['Gustu','Ancestral','Phayawi'],
+      cafes:['HB Bronze Coffeebar','Higher Ground Café','Diesel Nacional']
+    },
+    compras:{
+      lembrancas:['Mercado de las Brujas','Calle Sagárnaga','Mercado Lanza'],shoppings:[],
+      produtos:['Produtos de alpaca','Artesanato andino','Chocolates artesanais','Folclore boliviano'],
+      obs:['Negociação é comum em feiras','Dinheiro em espécie muito utilizado']
+    },
+    transporte:{
+      cidade:['Teleférico — melhor forma de locomoção','Uber funciona parcialmente','Táxis são baratos','Trânsito intenso no pico'],
+      aeroporto:['Aeroporto El Alto (LPB)','Transfer privado','Táxi','Apps'],
+      obs:['Aeroporto em altitude muito elevada','Alguns passageiros sentem altitude ao desembarcar']
+    },
+    hospedagem:{
+      melhores:['Sopocachi','Zona Sur','Centro turístico'],economicas:['Centro','Próximo à Sagárnaga'],
+      premium:['Zona Sur','Calacoto'],
+      obs:['Confirmar aquecimento no inverno','Algumas regiões têm ladeiras fortes','Altitude pode afetar o sono nos primeiros dias']
+    },
+    importante:{
+      geral:['Altitude elevada — risco de soroche','Hidratação, alimentação leve, evitar esforço no 1º dia','Clima frio durante manhãs e noites','Atenção com furtos em áreas movimentadas','Levar dinheiro em espécie'],
+      atencao:[],
+      passageiro:['Cidade com muito sobe e desce','Trânsito intenso','Cultura local muito forte','Banheiros públicos podem ser simples']
+    },
+    operacional:{
+      duvidas:['A altitude afeta muito?','Quantos dias são ideais?','Vale a pena fazer Death Road?','É seguro andar de teleférico?','Faz muito frio?'],
+      perfil:['Cultura','Aventura','Mochileiros','Fotografia','Experiências autênticas'],
+      upsells:['Death Road premium','Tour gastronômico','Copacabana + Isla del Sol','Hotel premium na Zona Sur','Tour privado cultural'],
+      combina:['Uyuni','Atacama','Cusco','Salar de Uyuni']
+    },
+    contatos:{aeroporto:'El Alto International Airport (LPB)',emergencias:{'Polícia':'110','Ambulância':'118','Bombeiros':'119'},apps:['WhatsApp','Maps.me','Google Translate','XE Currency','Mi Teleférico App']}
+  },
+  'Cusco': {
+    flag:'🇵🇪',
+    info:{
+      descricao:'Antiga capital do Império Inca e principal porta de entrada para Machu Picchu. Mistura de arquitetura inca e colonial espanhola.',
+      altitude:'Aproximadamente 3.400m',moeda:'Sol Peruano (PEN)',idioma:'Espanhol e Quéchua',
+      fuso:'1h a menos que Brasília',voltagem:'220V — Tomadas A e C',
+      internet:'Boa na região central — Chips: Claro, Movistar',
+      melhor_epoca:[
+        {periodo:'Abr–Out',desc:'Período seco — melhor clima para passeios',tipo:'green'},
+        {periodo:'Nov–Mar',desc:'Período chuvoso',tipo:'amber'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Machu Picchu','Vale Sagrado','Montanha Colorida','Laguna Humantay','City Tour Cusco','Maras e Moray','Valle Sur'],
+      pontos:['Plaza de Armas','Qorikancha','Sacsayhuamán','Bairro San Blas','Catedral de Cusco','Mercado San Pedro'],
+      experiencias:['Trem panorâmico para Machu Picchu','Experiências culturais andinas','Gastronomia peruana','Trilhas incas','Cerimônias andinas']
+    },
+    gastronomia:{
+      tipicos:['Pachapapa','Morena Peruvian Kitchen','Chicha by Gastón Acurio'],locais:['Green Point','Organika','La Cusqueñita'],
+      turisticos:['Limo','Cicciolina','Inka Grill'],premium:['MAP Café','Mil Centro','Mauka'],
+      cafes:['Three Monkeys Coffee','Café Dwasi','Republica del Pisco']
+    },
+    compras:{
+      lembrancas:['Mercado San Pedro','Centro Artesanal Cusco','Bairro San Blas'],shoppings:[],
+      produtos:['Alpaca','Artesanato peruano','Chocolates artesanais','Produtos andinos','Prata peruana'],
+      obs:['Negociação comum em mercados','Atenção com produtos falsos de alpaca']
+    },
+    transporte:{
+      cidade:['Centro histórico muito caminhável','Ruas estreitas e ladeiras frequentes','Uber funciona parcialmente','Táxis baratos e amplamente utilizados'],
+      aeroporto:['Aeroporto Alejandro Velasco Astete (CUZ)','Táxi','Transfer privado','Apps'],
+      obs:['Trânsito intenso no pico','Muitas ruas do centro são exclusivas para pedestres']
+    },
+    hospedagem:{
+      melhores:['Centro Histórico','San Blas','Próximo à Plaza de Armas'],
+      economicas:['Centro expandido','Áreas próximas ao Mercado San Pedro'],
+      premium:['Hotéis boutique no centro histórico','Vale Sagrado'],
+      obs:['Confirmar aquecimento','Algumas hospedagens oferecem oxigênio','Ladeiras podem dificultar locomoção']
+    },
+    importante:{
+      geral:['Altitude pode causar soroche','Hidratação, chá de coca e evitar esforço no 1º dia','Clima frio à noite quase o ano todo','Machu Picchu exige planejamento antecipado','Ingressos podem esgotar rapidamente','Dinheiro em espécie útil'],
+      atencao:[],
+      passageiro:['Muitos passeios começam cedo','Necessário passaporte em vários atrativos','Caminhadas moderadas em alguns tours','Clima pode mudar rapidamente']
+    },
+    operacional:{
+      duvidas:['Como funciona Machu Picchu?','Quantos dias são ideais?','A altitude afeta muito?','Vale a pena Montanha Colorida?','Precisa reservar Machu Picchu antes?'],
+      perfil:['Cultura','História','Natureza','Casais','Fotografia','Experiências autênticas'],
+      upsells:['Trem premium para Machu Picchu','Hotel boutique','Tour privado','Vale Sagrado VIP','Experiência gastronômica peruana'],
+      combina:['La Paz','Uyuni','Lima','Atacama']
+    },
+    contatos:{aeroporto:'Alejandro Velasco Astete International Airport (CUZ)',emergencias:{'Polícia':'105','Ambulância':'116','Bombeiros':'116/115'},apps:['WhatsApp','Maps.me','Google Translate','XE Currency','PeruRail']}
+  },
+  'Cartagena': {
+    flag:'🇨🇴',
+    info:{
+      descricao:'Principal destino caribenho da Colômbia. Cidade histórica com praias, vida noturna e ilhas paradisíacas.',
+      altitude:null,moeda:'Peso Colombiano (COP)',idioma:'Espanhol',
+      fuso:'2h atrás de Brasília',voltagem:'110V — Tomadas A e B',
+      internet:'Boa cobertura urbana — Chips: Claro, Tigo',
+      melhor_epoca:[
+        {periodo:'Dez–Abr',desc:'Período mais seco — mar mais bonito',tipo:'green'},
+        {periodo:'Mai–Nov',desc:'Maior chance de chuva',tipo:'amber'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Islas del Rosario','Bora Bora Beach Club','Cholon','Playa Blanca','Tour 5 Ilhas','Plancton Bioluminescente','City Tour Cartagena'],
+      pontos:['Cidade Murada','Torre do Relógio','Getsemaní','Castelo San Felipe','Café del Mar','Muelle de Los Pegasos'],
+      experiencias:['Sunset em rooftop','Passeios de lancha','Beach clubs','Vida noturna em Getsemaní','Experiência caribenha premium']
+    },
+    gastronomia:{
+      tipicos:['La Mulata','Candé','Celele'],locais:['Carmen Cartagena','Di Silvio Trattoria','Mar y Zielo'],
+      turisticos:['Hard Rock Café Cartagena','Restaurante Interno','El Burlador Gastrobar'],
+      premium:["Harry's Cartagena",'1621','Mistura Cartagena'],
+      cafes:['Café del Mar','Alquímico','Townhouse Rooftop','El Barón']
+    },
+    compras:{
+      lembrancas:['Las Bóvedas','Cidade Murada','Getsemaní'],
+      shoppings:['Caribe Plaza','La Serrezuela','Mall Plaza'],
+      produtos:['Café colombiano','Esmeraldas','Artesanato caribenho','Chapéus','Mochilas Wayuu'],
+      obs:['Negociação comum em feiras e praias','Atenção com preços inflacionados para turistas']
+    },
+    transporte:{
+      cidade:['Uber funciona de maneira não oficial','InDriver muito utilizado','Táxis são comuns','Centro histórico altamente caminhável'],
+      aeroporto:['Aeroporto Rafael Núñez (CTG)','Táxi','Transfer','Apps'],
+      obs:['Trânsito intenso no pico','Algumas ruas da Cidade Murada fechadas para carros']
+    },
+    hospedagem:{
+      melhores:['Cidade Murada','Bocagrande','Getsemaní'],economicas:['Getsemaní','Marbella'],
+      premium:['Cidade Murada','Zona Norte','Hotéis boutique coloniais'],
+      obs:['Ar-condicionado é essencial — muito calor','Bocagrande: perfil mais urbano/moderno','Cidade Murada: perfil histórico e premium']
+    },
+    importante:{
+      geral:['Clima muito quente e úmido','Hidratação essencial','Protetor solar indispensável','Atenção com vendedores insistentes em praias','Confirmar valores antes de consumir na praia','Alguns locais cobram taxa de serviço automaticamente'],
+      atencao:[],
+      passageiro:['Passeios marítimos dependem das condições do mar','Lanchas podem balançar bastante','Trânsito marítimo pode causar atrasos','Praia urbana de Cartagena não é o principal atrativo']
+    },
+    operacional:{
+      duvidas:['Qual melhor ilha?','Vale hospedagem na Cidade Murada?','O mar é azul em Cartagena?','Qual melhor beach club?','Chove muito?'],
+      perfil:['Casais','Lua de mel','Grupos','Vida noturna','Praia','Experiências premium'],
+      upsells:['Beach clubs premium','Lancha privativa','Rooftops','Hotel boutique','Passeios VIP nas ilhas'],
+      combina:['San Andrés','Medellín','Bogotá','Panamá']
+    },
+    contatos:{aeroporto:'Rafael Núñez International Airport (CTG)',emergencias:{'Emergência geral':'123'},apps:['WhatsApp','InDriver','Google Maps','XE Currency','Rappi']}
+  },
+  'San Andrés': {
+    flag:'🇨🇴',
+    info:{
+      descricao:'Ilha caribenha colombiana famosa pelo "Mar de 7 Cores". Ambiente relaxado e praiano, com snorkeling, passeios náuticos e duty free.',
+      altitude:null,moeda:'Peso Colombiano (COP)',idioma:'Espanhol e inglês crioulo',
+      fuso:'2h atrás de Brasília',voltagem:'110V — Tomadas A e B',
+      internet:'Boa em áreas urbanas — pode oscilar em regiões afastadas. Chips: Claro, Tigo',
+      melhor_epoca:[
+        {periodo:'Dez–Mai',desc:'Clima mais seco — mar mais bonito',tipo:'green'},
+        {periodo:'Jun–Nov',desc:'Possibilidade de chuvas e ventos',tipo:'amber'}
+      ]
+    },
+    passeios:{
+      mais_vendidos:['Volta à Ilha','Acuario e Haynes Cay','Johnny Cay','Passeio de mantarrayas','Passeio de lancha','West View','Hoyo Soplador'],
+      pontos:['Spratt Bight','Johnny Cay','Rocky Cay','Cocoplum Bay','La Piscinita','West View'],
+      experiencias:['Mar de 7 cores','Snorkeling em águas cristalinas','Passeios de carrinho de golfe','Mantarrayas','Sunset no mar do Caribe']
+    },
+    gastronomia:{
+      tipicos:['La Regatta','Donde Francesca','Fisherman Place'],locais:['Capitan Mandy','Miss Celia','Sea Watch Café'],
+      turisticos:['Beer Station','Restaurante Gourmet Shop','Casablanca Restaurant'],
+      premium:['Aqua Beach Club','Peru Wok','The Grog Rocky Cay'],
+      cafes:['Coconut Bar','Banzai Cocktail Bar','Ibiza Rooftop']
+    },
+    compras:{
+      lembrancas:['Centro de San Andrés','Peatonal Spratt Bight','Feiras locais'],
+      shoppings:['New Point','San Andrés Shopping','Duty Free locais'],
+      produtos:['Rum colombiano','Produtos duty free','Artesanato caribenho','Cosméticos','Chocolates e doces locais'],
+      obs:['Ilha conhecida pelas compras duty free','Comparar preços antes de comprar eletrônicos/perfumes']
+    },
+    transporte:{
+      cidade:['Carrinho de golfe','Mule / Scooter','Táxis disponíveis','Ilha pequena e fácil de circular'],
+      aeroporto:['Aeroporto Gustavo Rojas Pinilla (ADZ)','Táxi','Transfer','Carrinho alugado'],
+      obs:['Trânsito intenso em alta temporada','Cuidado ao alugar veículos sem experiência prévia']
+    },
+    hospedagem:{
+      melhores:['Spratt Bight','Centro','Rocky Cay'],economicas:['Centro expandido','Áreas internas da ilha'],
+      premium:['Hotéis all inclusive','Resorts frente mar'],
+      obs:['Confirmar localização, acesso à praia e ar-condicionado','Algumas praias têm muitas pedras/coral']
+    },
+    importante:{
+      geral:['Taxa de turismo obrigatória para entrada na ilha','Clima extremamente quente e úmido','Protetor solar e hidratação essenciais','Mar pode ter pedras e corais — recomendável sapatilha aquática','Passeios dependem das condições climáticas/marítimas'],
+      atencao:[],
+      passageiro:['Johnny Cay pode fechar devido ao mar','Algumas praias urbanas lotam bastante','Muitos passeios são compartilhados','Ilha tem ritmo mais simples que outros destinos caribenhos']
+    },
+    operacional:{
+      duvidas:['O mar realmente é azul?','Quantos dias são ideais?','Vale a pena all inclusive?','Precisa levar dólar?','Qual melhor praia?'],
+      perfil:['Praia','Família','Casais','Relaxamento','Caribe econômico','Grupos'],
+      upsells:['Hotel frente mar','All inclusive','Lancha privativa','Passeio VIP','Carrinho premium'],
+      combina:['Cartagena','Medellín','Bogotá','Panamá']
+    },
+    contatos:{aeroporto:'Gustavo Rojas Pinilla International Airport (ADZ)',emergencias:{'Emergência geral':'123'},apps:['WhatsApp','Google Maps','InDriver','Rappi','XE Currency']}
+  }
+};
+_DEST_DEFAULTS['San Andres'] = _DEST_DEFAULTS['San Andrés'];
+
+function _destRenderRichPage(dest, ct, isAdm) {
+  var info = ct.info || {};
+
+  function chips(arr, clr) {
+    if (!arr || !arr.length) return '<span style="font-size:12px;color:var(--text3);">—</span>';
+    return arr.map(function(it){
+      return '<div style="display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:0.5px solid var(--border);">' +
+        '<span style="width:5px;height:5px;min-width:5px;border-radius:50%;background:'+(clr||'var(--accent)')+';margin-top:5px;"></span>' +
+        '<span style="font-size:13px;color:var(--text);line-height:1.4;">'+it+'</span></div>';
+    }).join('');
+  }
+  function col(title, items, clr) {
+    if (!items || !items.length) return '';
+    return '<div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">'+title+'</div>'+chips(items,clr)+'</div>';
+  }
+  function grid(cols) {
+    var valid = cols.filter(Boolean);
+    if (!valid.length) return '';
+    return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:1rem;">'+valid.join('')+'</div>';
+  }
+  function sec(icon, title, body, key) {
+    var eBtn = isAdm
+      ? '<button data-destedit data-d="'+dest.replace(/"/g,'&quot;')+'" data-k="'+key+'" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--text3);cursor:pointer;font-family:var(--font);"><span class="ic"><svg><use href="#ic-pencil"/></svg></span> Editar</button>'
+      : '';
+    return '<div style="background:var(--surface);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;">' +
+      '<div style="padding:.65rem 1.1rem;border-bottom:0.5px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;">' +
+      '<div style="display:flex;align-items:center;gap:7px;"><span style="font-size:15px;">'+icon+'</span>' +
+      '<span style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;">'+title+'</span></div>' +
+      eBtn+'</div><div style="padding:1rem 1.1rem;">'+body+'</div></div>';
+  }
+  function epochBadge(tipo) {
+    var s={blue:'background:rgba(59,130,246,.15);color:var(--blue-l);border:0.5px solid rgba(59,130,246,.3);',
+           green:'background:rgba(34,197,94,.12);color:var(--green-l);border:0.5px solid rgba(34,197,94,.25);',
+           amber:'background:rgba(245,158,11,.12);color:var(--amber);border:0.5px solid rgba(245,158,11,.25);'};
+    return s[tipo]||s.blue;
+  }
+
+  // INFO
+  var infoItems=[];
+  if(info.moeda)    infoItems.push(['Moeda',info.moeda]);
+  if(info.voltagem) infoItems.push(['Voltagem',info.voltagem]);
+  if(info.internet) infoItems.push(['Internet',info.internet]);
+  if(info.fuso)     infoItems.push(['Fuso horário',info.fuso]);
+  if(info.altitude) infoItems.push(['Altitude',info.altitude]);
+  if(info.idioma)   infoItems.push(['Idioma',info.idioma]);
+  var infoHtml = info.descricao ? '<p style="font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:14px;">'+info.descricao+'</p>' : '';
+  if(infoItems.length) {
+    infoHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px;">' +
+      infoItems.map(function(it){ return '<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:2px;">'+it[0]+'</div><div style="font-size:13px;color:var(--text);">'+it[1]+'</div></div>'; }).join('') + '</div>';
+  }
+  if(info.melhor_epoca && info.melhor_epoca.length) {
+    infoHtml += '<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Melhor época para visitar</div>';
+    infoHtml += '<div style="display:flex;flex-direction:column;gap:6px;">' +
+      info.melhor_epoca.map(function(e){ return '<div style="display:flex;align-items:center;gap:8px;"><span style="'+epochBadge(e.tipo)+'display:inline-block;font-size:11px;padding:3px 9px;border-radius:6px;font-weight:600;white-space:nowrap;">'+e.periodo+'</span><span style="font-size:13px;color:var(--text2);">'+e.desc+'</span></div>'; }).join('')+'</div>';
+  }
+
+  // PASSEIOS
+  var p=ct.passeios||{};
+  var pasHtml=grid([col('Mais vendidos',p.mais_vendidos,'var(--accent)'),col('Pontos turísticos',p.pontos,'var(--blue)'),col('Experiências',p.experiencias,'var(--green)')]);
+
+  // GASTRONOMIA
+  var g=ct.gastronomia||{};
+  var gastHtml=grid([col('Típicos',g.tipicos),col('Locais',g.locais),col('Turísticos',g.turisticos),g.premium&&g.premium.length?col('Premium',g.premium,'var(--purple)'):'',col('Cafés e bares',g.cafes,'var(--amber)')]);
+  if(g.obs&&g.obs.length) gastHtml+='<div style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;">'+chips(g.obs)+'</div>';
+
+  // COMPRAS
+  var c=ct.compras||{};
+  var compHtml=grid([col('Lembranças',c.lembrancas),c.shoppings&&c.shoppings.length?col('Shoppings',c.shoppings):'',col('Produtos típicos',c.produtos)]);
+  if(c.obs&&c.obs.length) compHtml+='<div style="margin-top:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;">'+chips(c.obs)+'</div>';
+
+  // TRANSPORTE
+  var t=ct.transporte||{};
+  var transHtml=grid([col('Na cidade',t.cidade),col('Aeroporto / Como chegar',t.aeroporto)]);
+  if(t.obs&&t.obs.length) transHtml+='<div style="margin-top:10px;background:rgba(239,68,68,.07);border:0.5px solid rgba(239,68,68,.2);border-radius:8px;padding:8px 12px;">'+chips(t.obs,'var(--red)')+'</div>';
+
+  // HOSPEDAGEM
+  var h=ct.hospedagem||{};
+  var hospHtml=grid([col('Melhores regiões',h.melhores),h.economicas&&h.economicas.length?col('Econômicas',h.economicas):'',h.premium&&h.premium.length?col('Premium',h.premium,'var(--purple)'):'']);
+  if(h.obs&&h.obs.length) hospHtml+='<div style="margin-top:10px;background:rgba(245,158,11,.07);border:0.5px solid rgba(245,158,11,.2);border-radius:8px;padding:8px 12px;">'+chips(h.obs,'var(--amber)')+'</div>';
+
+  // IMPORTANTE
+  var imp=ct.importante||{};
+  var impHtml='';
+  if(imp.atencao&&imp.atencao.length) impHtml+='<div style="background:rgba(239,68,68,.08);border:0.5px solid rgba(239,68,68,.22);border-radius:8px;padding:10px 12px;margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:var(--red-l);margin-bottom:6px;">' + icon('triangle-alert',12) + ' Regiões que exigem atenção</div>'+chips(imp.atencao,'var(--red)')+'</div>';
+  impHtml+=grid([col('Geral',imp.geral),imp.passageiro&&imp.passageiro.length?col('O passageiro deve saber',imp.passageiro,'var(--amber)'):'']);
+
+  // OPERACIONAL
+  var op=ct.operacional||{};
+  var opHtml=grid([col('Dúvidas frequentes',op.duvidas,'var(--blue)'),col('Perfil de cliente',op.perfil,'var(--green)'),col('Upsells',op.upsells,'var(--accent)'),col('Combina com',op.combina,'var(--purple)')]);
+
+  // CONTATOS
+  var ctc=ct.contatos||{};
+  var ctHtml='';
+  if(ctc.aeroporto) ctHtml+='<div style="margin-bottom:12px;"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Aeroporto</div><div style="font-size:13px;font-weight:700;color:var(--text);">'+ctc.aeroporto+'</div></div>';
+  if(ctc.emergencias) {
+    var emKeys=Object.keys(ctc.emergencias);
+    ctHtml+='<div style="margin-bottom:12px;"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Emergências</div><div style="display:flex;flex-wrap:wrap;gap:8px;">'+
+      emKeys.map(function(k){ return '<div style="background:rgba(239,68,68,.1);border:0.5px solid rgba(239,68,68,.22);border-radius:8px;padding:6px 12px;"><div style="font-size:10px;color:var(--red-l);">'+k+'</div><div style="font-size:16px;font-weight:700;color:var(--text);">'+ctc.emergencias[k]+'</div></div>'; }).join('')+'</div></div>';
+  }
+  if(ctc.apps&&ctc.apps.length) ctHtml+='<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Apps úteis</div><div style="display:flex;flex-wrap:wrap;gap:6px;">'+ctc.apps.map(function(a){ return '<span style="background:var(--surface2);border:0.5px solid var(--border);border-radius:6px;padding:3px 9px;font-size:12px;color:var(--text2);">'+a+'</span>'; }).join('')+'</div></div>';
+
+  return sec(icon('map-pin',15),'Informações gerais',infoHtml,'info') +
+         sec(icon('mountain',15),'Passeios e atrativos',pasHtml,'passeios') +
+         sec(icon('utensils',15),'Gastronomia',gastHtml,'gastronomia') +
+         sec(icon('shopping-bag',15),'Compras',compHtml,'compras') +
+         sec(icon('car',15),'Transporte e locomoção',transHtml,'transporte') +
+         sec(icon('hotel',15),'Hospedagem',hospHtml,'hospedagem') +
+         sec(icon('triangle-alert',15),'Informações importantes',impHtml,'importante') +
+         sec(icon('lightbulb',15),'Dicas operacionais',opHtml,'operacional') +
+         sec(icon('phone',15),'Contatos úteis',ctHtml,'contatos');
+}
+
 // ===================== DESTINOS OPERADOS (portado do HUB) =====================
 var DEST_COORDS={'San Pedro de Atacama':[-22.9135,-68.1998],'Uyuni':[-20.4611,-66.8257],'Santiago':[-33.4489,-70.6693],'Cusco':[-13.5320,-71.9675],'La Paz':[-16.5000,-68.1193],'Cartagena':[10.3910,-75.4794],'San Andrés':[12.5847,-81.7006]};
 var DEST_TZ={'Santiago':'America/Santiago','San Pedro de Atacama':'America/Santiago','Uyuni':'America/La_Paz','La Paz':'America/La_Paz','Cusco':'America/Lima','Cartagena':'America/Bogota','San Andrés':'America/Bogota'};
 var DEST_MOEDA={'Santiago':{code:'CLP'},'San Pedro de Atacama':{code:'CLP'},'Uyuni':{code:'BOB'},'La Paz':{code:'BOB'},'Cusco':{code:'PEN'},'Cartagena':{code:'COP'},'San Andrés':{code:'COP'}};
 var WX_DAY={0:'sun',1:'sun',2:'cloud-sun',3:'cloud',45:'cloud-fog',48:'cloud-fog',51:'cloud-drizzle',53:'cloud-drizzle',55:'cloud-rain',61:'cloud-rain',63:'cloud-rain',65:'cloud-rain',71:'cloud-snow',73:'cloud-snow',75:'snowflake',77:'snowflake',80:'cloud-drizzle',81:'cloud-rain',82:'cloud-lightning',85:'cloud-snow',86:'snowflake',95:'cloud-lightning',96:'cloud-lightning',99:'cloud-lightning'};
 var WX_NIGHT={0:'moon',1:'moon',2:'cloud',3:'cloud',45:'cloud-fog',48:'cloud-fog',51:'cloud-rain',53:'cloud-rain',55:'cloud-rain',61:'cloud-rain',63:'cloud-rain',65:'cloud-rain',71:'cloud-snow',73:'cloud-snow',75:'snowflake',77:'snowflake',80:'cloud-rain',81:'cloud-rain',82:'cloud-lightning',85:'cloud-snow',86:'snowflake',95:'cloud-lightning',96:'cloud-lightning',99:'cloud-lightning'};
-var _destConfig=[], _destTours=[], _destAtivo=null, _destMap=null;
+var DEST_COR={'San Pedro de Atacama':'#22c55e','Santiago':'#3b82f6','Uyuni':'#f59e0b','Cusco':'#ef4444','La Paz':'#8b5cf6','Cartagena':'#f97316','San Andrés':'#92400e','San Andres':'#92400e'};
+function _destCor(loc){ var cf=_destGetCfg(loc); if(cf && cf.cor) return cf.cor; return DEST_COR[loc]||'var(--accent)'; }
+var _destConfig=[], _destTours=[], _destAtivo=null, _destParceiroAtivo=null, _destMap=null, _destDetailMap=null;
 var _destCotacoes={}, _destCotacaoTs=0, _destCotacaoDate='';
 var _wxCache={}, WX_CACHE_TTL=1800000;
+// Conteúdo rico dos destinos (defaults estáticos + overrides ao vivo do HUB via view read-only)
+var _destContentCache={}, _destOverrideByKey={};
+function _destContentKey(dest){ return 'dest_content_'+String(dest).replace(/[^a-zA-Z0-9]/g,'_'); }
+function _destGetContent(dest){
+  if(_destContentCache[dest]) return _destContentCache[dest];
+  var k=_destContentKey(dest); var ov=_destOverrideByKey[k];
+  if(ov){ try{ var parsed=(typeof ov==='string')?JSON.parse(ov):ov; _destContentCache[dest]=parsed; return parsed; }catch(e){} }
+  var def=(typeof _DEST_DEFAULTS!=='undefined')?_DEST_DEFAULTS[dest]:null;
+  if(def) _destContentCache[dest]=def;
+  return def||null;
+}
 function _destGetCoords(loc){ var c=_destConfig.find(function(x){return x.localidade===loc;}); if(c && c.lat && c.lng) return [parseFloat(c.lat),parseFloat(c.lng)]; return DEST_COORDS[loc]||null; }
 function _destGetCfg(loc){ return _destConfig.find(function(x){return x.localidade===loc;})||null; }
 function _destHoraLocal(dest){ var tz=DEST_TZ[dest]; if(!tz) return ''; try{ return new Intl.DateTimeFormat('pt-BR',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()); }catch(e){ return ''; } }
@@ -1818,12 +2326,15 @@ async function carregarDestinos(){
   const area=document.getElementById('view-destinos');
   area.innerHTML='<div class="loading">Carregando destinos...</div>';
   await _destLoadLeaflet();
-  const _r=await Promise.all([_hubGet('vw_vendas_destinos','localidade'), _hubGet('vw_vendas_tours','localidade'), _hubGet('vw_vendas_entradas','tour')]);
+  const _r=await Promise.all([_hubGet('vw_vendas_destinos','localidade'), _hubGet('vw_vendas_tours','localidade'), _hubGet('vw_vendas_entradas','tour'), _hubGet('vw_vendas_dest_content','key')]);
   if(_r[0]===null){ _hubSemKey('view-destinos','Destinos Operados'); return; }
   _destConfig=_r[0]||[];
   _destTours=(_r[1]||[]).filter(function(t){ return t.inativo!==true; });
   _vEntradasArr=_r[2]||[]; _vEntradasMap={}; _vEntradasArr.forEach(function(e){ _vEntradasMap[String(e.id)]=e; });
-  _destAtivo=null; _destLoadCotacoes();
+  // overrides ao vivo do HUB (se a view não existir, cai nos defaults estáticos)
+  _destOverrideByKey={}; _destContentCache={};
+  (_r[3]||[]).forEach(function(row){ if(row && row.key) _destOverrideByKey[row.key]=row.value; });
+  _destAtivo=null; _destParceiroAtivo=null; _destLoadCotacoes();
   if(!_destLista().length){ area.innerHTML='<div class="embreve">'+icon('mountain')+'<h3>Sem destinos</h3><p>Nenhum destino no HUB.</p></div>'; return; }
   area.innerHTML=''
     +'<div id="dest-breadcrumb" style="display:none;max-width:1000px;margin:0 auto 10px"></div>'
@@ -1872,36 +2383,99 @@ function _renderDestView(){
     return;
   }
   if(mapWrap) mapWrap.style.display='none';
-  if(crumb){ crumb.style.display='block'; crumb.innerHTML='<button class="tt-chip" onclick="_destSelecionar(null)">'+icon('arrow-right')+' Voltar aos destinos</button>'; }
   var d=_destAtivo; var cf=_destGetCfg(d)||{localidade:d}; var s=d.replace(/[^a-zA-Z0-9]/g,'_');
+  var cor=_destCor(d);
   var tours=_destTours.filter(function(t){ return t.localidade===d; });
-  var h='<div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:12px;padding:18px;margin-bottom:16px;">';
+  var parceiros=[]; tours.forEach(function(t){ var p=(t.parceiro && String(t.parceiro).trim())||'Sem parceiro'; if(parceiros.indexOf(p)<0) parceiros.push(p); });
+  parceiros.sort(function(a,b){ return String(a).localeCompare(String(b),'pt-BR'); });
+
+  // ----- Drill-down de parceiro (só aparece quando há mais de um parceiro) -----
+  if(_destParceiroAtivo){
+    if(crumb){ crumb.style.display='block';
+      crumb.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+        +'<button class="tt-chip" onclick="_destSelecionar(null)">'+icon('arrow-right')+' Destinos</button>'
+        +'<button class="tt-chip" onclick="_destSelecionarParceiro(null)">'+icon('arrow-right')+' '+escH(d)+'</button>'
+        +'<span style="font-size:12px;color:var(--text2);font-weight:700;display:inline-flex;align-items:center;gap:5px;"><span style="color:'+cor+'">'+icon('circle',12)+'</span> '+escH(_destParceiroAtivo)+'</span>'
+        +'</div>';
+    }
+    var tp=tours.filter(function(t){ return (((t.parceiro && String(t.parceiro).trim())||'Sem parceiro')===_destParceiroAtivo); });
+    var hp='<div class="tt-ghead"><span class="tt-bar"></span><span class="tt-gname">'+escH(_destParceiroAtivo)+'</span><span class="tt-gcount">'+tp.length+(tp.length===1?' tour':' tours')+'</span></div><div class="tt-grid">';
+    tp.slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(t){ hp+=_tourCardHTML(t); });
+    hp+='</div>';
+    conteudo.innerHTML=hp;
+    return;
+  }
+
+  // ----- Página do destino: mini-mapa + header ao vivo + ficha rica + tours -----
+  if(crumb){ crumb.style.display='block';
+    var chipTours=tours.length?('<button class="tt-chip" onclick="_destScrollTours()">'+icon('route')+' Ver tours ('+tours.length+')</button>'):'';
+    crumb.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+      +'<button class="tt-chip" onclick="_destSelecionar(null)">'+icon('arrow-right')+' Voltar aos destinos</button>'
+      +chipTours+'</div>';
+  }
+
+  var coords=_destGetCoords(d);
+  var h='';
+  if(coords) h+='<div id="dest-detail-map" style="width:100%;height:220px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;"></div>';
+
+  // header com dados AO VIVO (hora local / câmbio / clima) — a ficha estática não tem isso
+  h+='<div style="background:var(--surface);border:1px solid var(--border);border-top:3px solid '+cor+';border-radius:12px;padding:18px;margin-bottom:16px;">';
   h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+(cf.emoji?'<span style="font-size:30px;line-height:1;">'+escH(cf.emoji)+'</span>':icon('map-pin'))+'<div><div style="font-size:20px;font-weight:800;color:var(--text);">'+escH(d)+'</div>'+(cf.pais?'<div style="font-size:12px;color:var(--text3);">'+escH(cf.pais)+'</div>':'')+'</div></div>';
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0;">';
   if(DEST_TZ[d]) h+='<span id="hl-'+s+'" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700;color:var(--text);">'+icon('clock')+' '+(_destHoraLocal(d)||'--:--')+'</span>';
   if(DEST_MOEDA[d]) h+='<span id="cot-'+s+'" style="display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text3);">'+icon('banknote')+' ...</span>';
   h+='</div>';
-  if(cf.descricao) h+='<div style="font-size:13px;color:var(--text2);line-height:1.6;margin-top:6px;">'+escH(cf.descricao)+'</div>';
-  if(cf.destaques) h+='<div style="margin-top:10px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:3px;">Destaques</div><div style="font-size:13px;color:var(--text2);line-height:1.5;">'+escH(cf.destaques)+'</div></div>';
-  if(cf.curiosidades) h+='<div style="margin-top:10px;"><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:3px;">Curiosidades</div><div style="font-size:13px;color:var(--text2);line-height:1.5;">'+escH(cf.curiosidades)+'</div></div>';
   h+='<div id="wx-'+s+'" style="margin-top:8px;"></div>';
   h+='</div>';
-  if(tours.length){
-    var gp={}; tours.forEach(function(t){ var p=t.parceiro||'Sem parceiro'; (gp[p]=gp[p]||[]).push(t); });
-    h+='<div style="font-size:13px;font-weight:800;color:var(--text2);margin:4px 0 10px;">'+tours.length+' tour'+(tours.length!==1?'s':'')+' operado'+(tours.length!==1?'s':'')+'</div>';
-    Object.keys(gp).sort().forEach(function(p){
-      h+='<div class="tt-ghead"><span class="tt-bar"></span><span class="tt-gname">'+escH(p)+'</span><span class="tt-gcount">'+gp[p].length+(gp[p].length===1?' tour':' tours')+'</span></div>';
-      h+='<div class="tt-grid">';
-      gp[p].slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(t){ h+=_tourCardHTML(t); });
-      h+='</div>';
-    });
-  } else {
-    h+='<div class="embreve">'+icon('route')+'<h3>Sem tours cadastrados</h3><p>Este destino ainda não tem tours no HUB.</p></div>';
+
+  // FICHA RICA (9 seções) — override ao vivo do HUB, senão default estático
+  var ct=_destGetContent(d);
+  if(ct){
+    h+=_destRenderRichPage(d, ct, false);
+  } else if(cf.descricao){
+    h+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6;">'+escH(cf.descricao)+'</div>';
   }
+
+  // BLOCO DE TOURS — cards INTACTOS (_tourCardHTML). Parceiro-único => direto; multi => grid clicável
+  h+='<div id="dest-tours-anchor" style="scroll-margin-top:16px;"></div>';
+  h+='<div class="tt-ghead" style="margin-top:6px;"><span class="tt-bar"></span><span class="tt-gname">'+icon('route',14)+' Tours operados</span><span class="tt-gcount">'+tours.length+(tours.length===1?' tour':' tours')+'</span></div>';
+  if(!tours.length){
+    h+='<div class="embreve">'+icon('route')+'<h3>Sem tours cadastrados</h3><p>Este destino ainda não tem tours no HUB.</p></div>';
+  } else if(parceiros.length>1){
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:4px;">';
+    parceiros.forEach(function(p){
+      var qt=tours.filter(function(t){ return (((t.parceiro && String(t.parceiro).trim())||'Sem parceiro')===p); }).length;
+      h+='<div onclick="_destSelecionarParceiro(\''+String(p).replace(/'/g,"\\'")+'\')" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;">'
+        +'<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">'+escH(p)+'</div>'
+        +'<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">'+qt+' tour'+(qt!==1?'s':'')+'</div>'
+        +'<div style="font-size:12px;font-weight:700;color:'+cor+';">Ver tours '+icon('arrow-right',12)+'</div></div>';
+    });
+    h+='</div>';
+  } else {
+    var pu=parceiros[0]||'Sem parceiro';
+    if(pu!=='Sem parceiro') h+='<div style="font-size:12px;color:var(--text3);margin:2px 0 8px;display:inline-flex;align-items:center;gap:5px;">'+icon('handshake',12)+' '+escH(pu)+'</div>';
+    h+='<div class="tt-grid">';
+    tours.slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(t){ h+=_tourCardHTML(t); });
+    h+='</div>';
+  }
+
   conteudo.innerHTML=h;
   _destIniciarRelogioCard(d); _destRenderCotacaoCard(d); _destCarregarClima(d);
+  if(coords) setTimeout(function(){ _destInitDetailMap(d,coords,cor); },120);
 }
-function _destSelecionar(d){ _destAtivo=d; _renderDestView(); if(!d) setTimeout(function(){ _destInitMap(); },200); try{ window.scrollTo(0,0); var mp=document.querySelector('.content'); if(mp) mp.scrollTop=0; }catch(e){} }
+function _destInitDetailMap(dest,coords,cor){
+  if(_destDetailMap){ try{ _destDetailMap.remove(); }catch(e){} _destDetailMap=null; }
+  var el=document.getElementById('dest-detail-map'); if(!el||!window.L) return;
+  _destDetailMap=L.map('dest-detail-map',{zoomControl:true,scrollWheelZoom:false,attributionControl:false}).setView(coords,12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_destDetailMap);
+  var cf=_destGetCfg(dest)||{};
+  var ic=L.divIcon({className:'',html:'<div style="background:'+(cor||'#cf6514')+';width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+  L.marker(coords,{icon:ic}).addTo(_destDetailMap).bindPopup('<b>'+(cf.emoji?cf.emoji+' ':'')+dest+'</b>');
+  setTimeout(function(){ try{_destDetailMap.invalidateSize(true);}catch(e){} },200);
+}
+function _destScrollTours(){ var el=document.getElementById('dest-tours-anchor'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+function _destSelecionarParceiro(p){ _destParceiroAtivo=p; _renderDestView(); try{ window.scrollTo(0,0); var mp=document.querySelector('.content'); if(mp) mp.scrollTop=0; }catch(e){} }
+function _destSelecionar(d){ _destAtivo=d; _destParceiroAtivo=null; if(_destDetailMap){ try{_destDetailMap.remove();}catch(e){} _destDetailMap=null; } _renderDestView(); if(!d) setTimeout(function(){ _destInitMap(); },200); try{ window.scrollTo(0,0); var mp=document.querySelector('.content'); if(mp) mp.scrollTop=0; }catch(e){} }
 
 var _vEntradasMap = {};
 var _vEntradasArr = [];
