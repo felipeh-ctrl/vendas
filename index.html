@@ -405,6 +405,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .repo-admin{display:flex;gap:6px;border-top:1px solid var(--border);padding-top:8px}
 
 .selo-hub{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:var(--r-full);background:rgba(59,130,246,.14);color:var(--blue-l);border:1px solid rgba(59,130,246,.3);margin-left:auto}
+.hubsec{max-width:900px;margin:0 auto}
+.dest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.dest-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px}
+.dest-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.dest-emoji{font-size:26px;line-height:1}
+.dest-nome{font-size:16px;font-weight:800;color:var(--text)}
+.dest-pais{font-size:12px;color:var(--text3)}
+.dest-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.dest-bloco{margin-top:10px}
+.dest-bloco b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-bottom:3px}
+.dest-bloco span{font-size:12.5px;color:var(--text2);line-height:1.5}
+.hub-dgroup{margin-bottom:22px}
+.hub-dgroup>h3{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.hub-dgroup>h3 .ic{color:var(--accent);font-size:15px}
+.utable td .ic{font-size:13px;color:var(--text3);vertical-align:-2px;margin-right:4px}
+
 </style>
 </head>
 <body>
@@ -556,6 +572,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 <symbol id="ic-external-link" viewBox="0 0 24 24"><path d="M15 3h6v6" />
   <path d="M10 14 21 3" />
   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></symbol>
+<symbol id="ic-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+  <circle cx="12" cy="10" r="3" /></symbol>
+<symbol id="ic-phone" viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></symbol>
+<symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <path d="M12 6v6l4 2" /></symbol>
+<symbol id="ic-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+  <path d="M2 12h20" /></symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -821,7 +845,9 @@ function irView(v){
   document.getElementById('view-'+v).classList.add('active');
   fecharSidebar(); renderNav();
   if(v==='avisos') carregarAvisos();
-  if(['destinos','tours','postos'].includes(v)) renderEmBreve(v);
+  if(v==='destinos') carregarDestinos();
+  if(v==='tours') carregarToursValores();
+  if(v==='postos') carregarPostos();
   if(v==='repo') carregarRepo();
   if(v==='usuarios') carregarUsuarios();
 }
@@ -1280,6 +1306,69 @@ function excluirRepo(id){
       showToast('Excluído.'); carregarRepo();
     }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
   });
+}
+
+
+
+// ============================================================
+// CONSULTA (HUB) — Destinos, Links dos Tours, Postos (só leitura via sbHub)
+// ============================================================
+async function _hubGet(view, order){
+  if(!SB_HUB_ANON || SB_HUB_ANON.indexOf('COLE_')===0) return null;
+  try{ const q=sbHub.from(view).select('*'); if(order) q.order(order,{ascending:true}); const {data,error}=await q; if(error) throw error; return data||[]; }
+  catch(e){ return []; }
+}
+function _hubSemKey(area,titulo){ document.getElementById(area).innerHTML='<div class="view-toolbar"><h2>'+titulo+'</h2></div><div class="embreve">'+icon('lock')+'<h3>Fonte do HUB não configurada</h3><p>Falta a anon key do HUB no app.</p></div>'; }
+function _grupoPorDestino(rows){ const g={}; rows.forEach(function(r){ const d=r.destino||'Geral'; (g[d]=g[d]||[]).push(r); }); return g; }
+
+async function carregarDestinos(){
+  const area=document.getElementById('view-destinos');
+  area.innerHTML='<div class="loading">Carregando destinos...</div>';
+  const rows=await _hubGet('vw_vendas_destinos','localidade');
+  if(rows===null){ _hubSemKey('view-destinos','Destinos Operados'); return; }
+  let h='<div class="view-toolbar"><h2>Destinos Operados</h2></div><div class="hubsec">';
+  if(!rows.length){ h+='<div class="embreve">'+icon('mountain')+'<h3>Sem destinos</h3><p>Nenhum destino cadastrado no HUB.</p></div></div>'; area.innerHTML=h; return; }
+  h+='<div class="dest-grid">';
+  rows.forEach(function(r){
+    h+='<div class="dest-card"><div class="dest-h">'+(r.emoji?'<span class="dest-emoji">'+escH(r.emoji)+'</span>':icon('map-pin'))+'<div><div class="dest-nome">'+escH(r.localidade||'—')+'</div>'+(r.pais?'<div class="dest-pais">'+escH(r.pais)+'</div>':'')+'</div></div>';
+    if(r.descricao) h+='<div class="dest-desc">'+escH(r.descricao)+'</div>';
+    if(r.destaques) h+='<div class="dest-bloco"><b>Destaques</b><span>'+escH(r.destaques)+'</span></div>';
+    if(r.curiosidades) h+='<div class="dest-bloco"><b>Curiosidades</b><span>'+escH(r.curiosidades)+'</span></div>';
+    h+='</div>';
+  });
+  h+='</div></div>'; area.innerHTML=h;
+}
+
+async function carregarToursValores(){
+  const area=document.getElementById('view-tours');
+  area.innerHTML='<div class="loading">Carregando tours...</div>';
+  const rows=await _hubGet('vw_vendas_tours_valores','destino');
+  if(rows===null){ _hubSemKey('view-tours','Links dos Tours'); return; }
+  let h='<div class="view-toolbar"><h2>Links dos Tours</h2></div><div class="hubsec">';
+  if(!rows.length){ h+='<div class="embreve">'+icon('route')+'<h3>Sem tours</h3><p>Nenhum registro no HUB.</p></div></div>'; area.innerHTML=h; return; }
+  const g=_grupoPorDestino(rows);
+  Object.keys(g).sort().forEach(function(d){
+    h+='<div class="hub-dgroup"><h3>'+icon('mountain')+' '+escH(d)+'</h3><table class="utable"><thead><tr><th>Tour</th><th>Código</th><th>Parceiro</th><th>Valor</th></tr></thead><tbody>';
+    g[d].forEach(function(r){ h+='<tr><td style="color:var(--text);font-weight:600">'+escH(r.tour||'—')+'</td><td>'+escH(r.codigo||'—')+'</td><td>'+escH(r.parceiro||'—')+'</td><td style="color:var(--accent);font-weight:700">'+escH(r.valor!=null?r.valor:'—')+'</td></tr>'; });
+    h+='</tbody></table></div>';
+  });
+  h+='</div>'; area.innerHTML=h;
+}
+
+async function carregarPostos(){
+  const area=document.getElementById('view-postos');
+  area.innerHTML='<div class="loading">Carregando postos...</div>';
+  const rows=await _hubGet('vw_vendas_postos','destino');
+  if(rows===null){ _hubSemKey('view-postos','Postos Médicos'); return; }
+  let h='<div class="view-toolbar"><h2>Postos Médicos</h2></div><div class="hubsec">';
+  if(!rows.length){ h+='<div class="embreve">'+icon('shield')+'<h3>Sem postos</h3><p>Nenhum posto cadastrado no HUB.</p></div></div>'; area.innerHTML=h; return; }
+  const g=_grupoPorDestino(rows);
+  Object.keys(g).sort().forEach(function(d){
+    h+='<div class="hub-dgroup"><h3>'+icon('map-pin')+' '+escH(d)+'</h3><table class="utable"><thead><tr><th>Nome</th><th>Endereço</th><th>Telefone</th><th>Horário</th></tr></thead><tbody>';
+    g[d].forEach(function(r){ h+='<tr><td style="color:var(--text);font-weight:600">'+escH(r.nome||'—')+'</td><td>'+escH(r.endereco||'—')+'</td><td>'+icon('phone')+escH(r.telefone||'—')+'</td><td>'+icon('clock')+escH(r.horario||'—')+'</td></tr>'; });
+    h+='</tbody></table></div>';
+  });
+  h+='</div>'; area.innerHTML=h;
 }
 
 
