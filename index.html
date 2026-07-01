@@ -770,7 +770,8 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
 
     <div class="content">
       <!-- TEMPLATES -->
-      <div class="view active" id="view-templates">
+      <div class="view active" id="view-inicio"></div>
+      <div class="view" id="view-templates">
         <div class="hero"><div class="hero-search"><span class="ic"><svg><use href="#ic-search"/></svg></span><input id="busca" placeholder="O que o cliente perguntou? (transfer, câmbio, pagamento...)" oninput="onBusca()"></div></div>
         <div id="tplArea"><div class="loading">Carregando templates...</div></div>
       </div>
@@ -943,7 +944,7 @@ async function fazerLogin(){
   }catch(ex){ err.textContent='Erro: '+(ex.message||ex); btn.disabled=false; }
 }
 
-var AREA_TITULOS={templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',repo:'Repositório',usuarios:'Usuários'};
+var AREA_TITULOS={inicio:'Início',templates:'Templates',avisos:'Avisos',faq:'FAQ',destinos:'Destinos Operados',tours:'Links dos Tours',postos:'Postos Médicos',repo:'Repositório',usuarios:'Usuários'};
 function setAreaTitle(v){ var el=document.getElementById('areaTitle'); if(el) el.textContent=AREA_TITULOS[v]||''; }
 var _areaClockTimer=null;
 function startAreaClock(){ if(_areaClockTimer) return; var tick=function(){ var el=document.getElementById('areaClockT'); if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }; tick(); _areaClockTimer=setInterval(tick,1000); }
@@ -996,7 +997,8 @@ async function entrarApp(){
   document.getElementById('app').style.display='flex';
   renderNav();
   carregarTemplates();
-  startAreaClock(); setAreaTitle('templates'); iniciarPresence();
+  carregarInicio();
+  startAreaClock(); setAreaTitle('inicio'); iniciarPresence();
 }
 
 async function fazerLogout(){ await sb.auth.signOut(); location.reload(); }
@@ -1010,6 +1012,7 @@ function navItem(id,iconName,label,onclick,active){
 function renderNav(){
   var h='';
   h+='<div class="nav-section">Principal</div>';
+  h+='<button class="nav-item'+(currentView==='inicio'?' active':'')+'" onclick="irView(\'inicio\')">'+icon('home')+' Início</button>';
   h+='<button class="nav-item'+(currentView==='templates'?' active':'')+'" onclick="irTemplates(null,null)">'+icon('layout-grid')+' Templates</button>';
   h+='<button class="nav-item'+(currentView==='avisos'?' active':'')+'" onclick="irView(\'avisos\')">'+icon('bell')+' Avisos</button>';
   h+='<button class="nav-item'+(currentView==='faq'?' active':'')+'" onclick="irView(\'faq\')">'+icon('circle-help')+' FAQ</button>';
@@ -1023,13 +1026,14 @@ function renderNav(){
   document.getElementById('nav').innerHTML=h;
 }
 
-let currentView='templates';
+let currentView='inicio';
 function irView(v){
   if(v==='usuarios' && !isAdmin()){ irTemplates(null,null); return; }
   currentView=v; setAreaTitle(v);
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   fecharSidebar(); renderNav();
+  if(v==='inicio') carregarInicio();
   if(v==='avisos') carregarAvisos();
   if(v==='faq') carregarFaq();
   if(v==='destinos') carregarDestinos();
@@ -1536,6 +1540,80 @@ function _tourCardHTML(r){
   if(ft) c+='<div class="tt-foot">'+ft+'</div>';
   c+='</div>';
   return c;
+}
+
+// ===================== INÍCIO (home: busca protagonista + atalhos + avisos) =====================
+async function carregarInicio(){
+  var area=document.getElementById('view-inicio'); if(!area) return;
+  var hora=new Date().getHours();
+  var saud=hora<12?'Bom dia':(hora<18?'Boa tarde':'Boa noite');
+  var nome=escH((currentUser.nome||'').split(' ')[0]||'');
+  var h=''
+    +'<div style="max-width:720px;margin:6px auto 0;text-align:center">'
+      +'<div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.5px;display:inline-flex;align-items:center;gap:8px;justify-content:center">'+saud+', '+nome+' <span style="color:var(--accent)">'+icon('sparkles')+'</span></div>'
+      +'<div style="font-size:14px;color:var(--text3);margin-top:4px">O que o cliente perguntou? Busque um template e responda em segundos.</div>'
+    +'</div>'
+    +'<div class="hero" style="margin-top:18px"><div class="hero-search"><span class="ic"><svg><use href="#ic-search"/></svg></span>'
+      +'<input id="home-busca" placeholder="Buscar template (transfer, câmbio, pagamento...)" onkeydown="if(event.key===\'Enter\')homeBuscar()">'
+      +'<button class="btn-novo" style="padding:7px 14px" onclick="homeBuscar()">'+icon('search')+' Buscar</button></div></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:720px;margin:0 auto 24px">'
+      + DESTINOS.map(function(d){ return '<button onclick="irTemplates(\''+d+'\',null)" style="display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-family:var(--font);cursor:pointer">'+icon(DEST_ICON[d]||'map-pin')+' '+escH(d)+'</button>'; }).join('')
+    +'</div>'
+    +'<div style="max-width:820px;margin:0 auto">'
+      +'<div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin:0 0 10px 2px">Atalhos</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">'
+        + _homeCard('layout-grid','Templates',"irTemplates(null,null)")
+        + _homeCard('bell','Avisos',"irView('avisos')")
+        + _homeCard('circle-help','FAQ',"irView('faq')")
+        + _homeCard('mountain','Destinos',"irView('destinos')")
+        + _homeCard('route','Links dos Tours',"irView('tours')")
+        + _homeCard('shield','Postos Médicos',"irView('postos')")
+        + _homeCard('folder','Repositório',"irView('repo')")
+        + (isAdmin()?_homeCard('users','Usuários',"irView('usuarios')"):'')
+      +'</div>'
+    +'</div>'
+    +'<div style="max-width:820px;margin:24px auto 0">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 10px 2px">'
+        +'<span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">Avisos recentes</span>'
+        +'<button onclick="irView(\'avisos\')" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:4px">Ver todos '+icon('arrow-right')+'</button></div>'
+      +'<div id="home-avisos"><div class="loading" style="padding:10px">Carregando avisos...</div></div>'
+    +'</div>';
+  area.innerHTML=h;
+  _homeCarregarAvisos();
+}
+function _homeCard(ic,label,onclick){
+  return '<button onclick="'+onclick+'" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'" style="display:flex;flex-direction:column;align-items:flex-start;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:15px;cursor:pointer;font-family:var(--font);text-align:left;transition:border-color .15s">'
+    +'<span style="font-size:20px;color:var(--accent)">'+icon(ic)+'</span>'
+    +'<span style="font-size:14px;font-weight:700;color:var(--text)">'+escH(label)+'</span></button>';
+}
+function homeBuscar(){
+  var el=document.getElementById('home-busca'); var t=el?el.value:'';
+  irTemplates(null,null);
+  var b=document.getElementById('busca'); if(b) b.value=t;
+  _busca=(t||'').trim(); renderTemplates();
+}
+async function _homeCarregarAvisos(){
+  var el=document.getElementById('home-avisos'); if(!el) return;
+  try{
+    var res=await Promise.all([
+      sb.from('avisos_vendas').select('*').eq('status','ativo').order('fixado',{ascending:false}).order('created_at',{ascending:false}),
+      _fetchHubAvisos()
+    ]);
+    var v=(res[0]&&res[0].data)||[]; var hub=res[1]||[];
+    var all=v.map(function(a){ return {titulo:a.titulo,created_at:a.created_at,fixado:!!a.fixado,hub:false}; })
+      .concat(hub.map(function(a){ return {titulo:a.titulo,created_at:a.created_at,fixado:false,hub:true}; }));
+    all.sort(function(a,b){ if(a.fixado&&!b.fixado) return -1; if(!a.fixado&&b.fixado) return 1; return new Date(b.created_at)-new Date(a.created_at); });
+    all=all.slice(0,4);
+    if(!all.length){ el.innerHTML='<div style="font-size:13px;color:var(--text3);padding:6px 2px">Nenhum aviso no momento.</div>'; return; }
+    el.innerHTML=all.map(function(a){
+      var dt=a.created_at?new Date(a.created_at).toLocaleDateString('pt-BR'):'';
+      return '<div onclick="irView(\'avisos\')" style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:6px;cursor:pointer">'
+        +'<span style="color:var(--accent)">'+icon('bell')+'</span>'
+        +'<span style="flex:1;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escH(a.titulo||'(sem título)')+'</span>'
+        +(a.hub?'<span style="font-size:10px;font-weight:700;color:#4f9fe0;background:#4f9fe026;padding:2px 8px;border-radius:20px">HUB</span>':'')
+        +'<span style="font-size:11px;color:var(--text3);white-space:nowrap">'+dt+'</span></div>';
+    }).join('');
+  }catch(e){ el.innerHTML='<div style="font-size:13px;color:var(--text3);padding:6px 2px">Não foi possível carregar os avisos agora.</div>'; }
 }
 
 // ===================== FAQ (portado do HUB) =====================
