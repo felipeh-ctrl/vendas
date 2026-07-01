@@ -421,6 +421,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .hub-dgroup>h3 .ic{color:var(--accent);font-size:15px}
 .utable td .ic{font-size:13px;color:var(--text3);vertical-align:-2px;margin-right:4px}
 
+.lk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.lk-ghead{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:12px}
+.lk-bar{width:4px;height:22px;border-radius:2px;background:var(--accent);flex-shrink:0}
+.lk-gname{font-size:15px;font-weight:800;color:var(--accent)}
+.lk-gcount{font-size:12px;color:var(--text3);margin-left:auto}
+.lk-card{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:12px;padding:14px}
+.lk-codigo{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.lk-nome{font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px}
+.lk-rows{display:flex;flex-direction:column;gap:5px}
+.lk-row{font-size:13px;color:var(--text2)}
+.lk-row .ic{font-size:13px;color:var(--text3);vertical-align:-2px;margin-right:3px}
+.lk-row strong{color:var(--text2);font-weight:700}
+.lk-notion a{color:var(--accent);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-size:13px}
+.lk-emerg{font-size:12px;color:var(--text3);margin-top:3px;border-top:1px solid var(--border);padding-top:5px}
+.lk-parc{font-size:11px;color:var(--text3);margin-top:3px}
+
 </style>
 </head>
 <body>
@@ -580,6 +596,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 <symbol id="ic-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
   <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
   <path d="M2 12h20" /></symbol>
+<symbol id="ic-siren" viewBox="0 0 24 24"><path d="M7 18v-6a5 5 0 1 1 10 0v6" />
+  <path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z" />
+  <path d="M21 12h1" />
+  <path d="M18.5 4.5 18 5" />
+  <path d="M2 12h1" />
+  <path d="M12 2v1" />
+  <path d="m4.929 4.929.707.707" />
+  <path d="M12 12v6" /></symbol>
+<symbol id="ic-handshake" viewBox="0 0 24 24"><path d="m11 17 2 2a1 1 0 1 0 3-3" />
+  <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" />
+  <path d="m21 3 1 11h-2" />
+  <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" />
+  <path d="M3 4h8" /></symbol>
+<symbol id="ic-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+  <path d="M13 5v2" />
+  <path d="M13 17v2" />
+  <path d="M13 11v2" /></symbol>
+<symbol id="ic-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></symbol>
+<symbol id="ic-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+  <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol>
 </svg>
 
 <!-- LOGIN -->
@@ -1339,20 +1376,129 @@ async function carregarDestinos(){
   h+='</div></div>'; area.innerHTML=h;
 }
 
+var _vEntradasMap = {};
+var _vEntradasArr = [];
+function _ondePagarMini(op){
+  var t='',c='',ic='';
+  if(op==='incluido'){t='Incluído';c='#22c55e';ic='check';}
+  else if(op==='parque'){t='Parque';c='#f59e0b';ic='leaf';}
+  else if(op==='apoio'){t='Apoio';c='#3b82f6';ic='home';}
+  else return '';
+  return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:'+c+'24;color:'+c+';border:1px solid '+c+'40;">'+icon(ic)+' '+t+'</span>';
+}
+function _ondePagarChip(op){
+  var t='',ic='';
+  if(op==='incluido'){t='Incluído';ic='check';}
+  else if(op==='parque'){t='Pago no Parque';ic='leaf';}
+  else if(op==='apoio'){t='Pago no Ponto de Apoio';ic='home';}
+  else return '';
+  return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);">'+icon(ic)+' '+t+'</span>';
+}
+function _entradaPorNome(loc, nome){
+  if(!nome) return null;
+  var _n=String(nome).trim().toLowerCase();
+  var _l=String(loc||'').trim().toLowerCase();
+  for(var i=0;i<_vEntradasArr.length;i++){ var e=_vEntradasArr[i];
+    if(String(e.tour||'').trim().toLowerCase()===_n && (!_l || String(e.destino||'').trim().toLowerCase()===_l)) return e; }
+  return null;
+}
+function _ingressoInner(ent, corTotal, hero){
+  if(!ent) return '';
+  var cT = corTotal || 'var(--accent)';
+  var comps = [];
+  if(ent.componentes){ try{ comps=(typeof ent.componentes==='string')?JSON.parse(ent.componentes):ent.componentes; }catch(e){ comps=[]; } }
+  comps = Array.isArray(comps) ? comps.filter(function(c){ return c && (c.descricao || c.valor); }) : [];
+  var num=function(v){ var n=parseFloat(v); return isNaN(n)?0:n; };
+  var moedaRef=(comps.find(function(c){return c.moeda;})||{}).moeda || ent.moeda || '';
+  var moedaPref=moedaRef?(moedaRef+' '):'';
+  var obsHtml=(ent.obs && String(ent.obs).trim())?('<div style="font-size:12px;color:var(--text2);line-height:1.5;border-top:1px solid var(--border);padding-top:6px;margin-top:8px;">'+icon('clipboard-list')+' '+ent.obs+'</div>'):'';
+  var obrig=comps.filter(function(c){ return !c.grupo || !String(c.grupo).trim(); });
+  var gruposMap={}, gruposOrdem=[];
+  comps.forEach(function(c){ var g=(c.grupo && String(c.grupo).trim()); if(g){ if(!gruposMap[g]){ gruposMap[g]=[]; gruposOrdem.push(g); } gruposMap[g].push(c); } });
+  var totalTxt='';
+  if(comps.length){
+    var base=0; obrig.forEach(function(c){ if(c.onde_pagar!=='incluido') base+=num(c.valor); });
+    var mn=base, mx=base;
+    gruposOrdem.forEach(function(g){ var vals=gruposMap[g].map(function(c){ return c.onde_pagar==='incluido'?0:num(c.valor); }); mn+=Math.min.apply(null,vals); mx+=Math.max.apply(null,vals); });
+    var fmt=function(v){ return moedaPref+Math.round(v).toLocaleString('pt-BR'); };
+    totalTxt=(mn===mx)?fmt(mx):(fmt(mn)+' – '+Math.round(mx).toLocaleString('pt-BR'));
+  } else {
+    var mostra=ent.onde_pagar!=='incluido' && ent.valor!=null && ent.valor!=='' && ent.valor!=='-';
+    totalTxt=mostra?(moedaPref+ent.valor):'';
+  }
+  var placeCount={}; var fontePlaces=comps.length?comps:[{onde_pagar:ent.onde_pagar}];
+  fontePlaces.forEach(function(c){ var o=c.onde_pagar; if(o) placeCount[o]=(placeCount[o]||0)+1; });
+  var dominant='', best=0; Object.keys(placeCount).forEach(function(o){ if(placeCount[o]>best){ best=placeCount[o]; dominant=o; } });
+  if(!totalTxt && !dominant && !obsHtml) return '';
+  var linhaItem=function(c, naEscolha){
+    var o=c.onde_pagar||''; var inc=(o==='incluido');
+    var tag=inc?_ondePagarMini('incluido'):((o && o!==dominant)?_ondePagarMini(o):'');
+    var temV=(c.valor!=null && c.valor!=='' && c.valor!=='-');
+    var vp=(c.moeda && c.moeda!==moedaRef)?(c.moeda+' '):'';
+    var vtxt=temV?(vp+c.valor):'';
+    var valStyle=inc?'color:var(--text3);font-weight:600;text-decoration:line-through;':'color:var(--text);font-weight:600;';
+    var nameColor=naEscolha?'var(--text)':'var(--text2)';
+    return '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px;padding:1px 0;"><span style="color:'+nameColor+';">'+(c.descricao||'—')+'</span><span style="display:flex;align-items:center;gap:8px;flex-shrink:0;">'+tag+'<span style="'+valStyle+'font-variant-numeric:tabular-nums;">'+vtxt+'</span></span></div>';
+  };
+  var chip=dominant?_ondePagarChip(dominant):'';
+  var html;
+  if(hero){
+    html=totalTxt?('<div style="font-size:22px;font-weight:800;color:'+cT+';line-height:1;">'+totalTxt+'</div>'):'';
+    if(chip) html+='<div style="margin-top:7px;">'+chip+'</div>';
+  } else {
+    html='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:13px;color:var(--text2);">'+icon('ticket')+' <strong style="color:var(--text);">Ingresso'+(totalTxt?':':'')+'</strong></span>'+(totalTxt?('<span style="font-size:15px;font-weight:800;color:'+cT+';">'+totalTxt+'</span>'):'')+chip+'</div>';
+  }
+  if(obrig.length){
+    html+='<div style="display:flex;flex-direction:column;gap:4px;margin-top:'+(hero?'12':'8')+'px;'+(hero?'border-top:1px solid var(--border);padding-top:8px;':'')+'">';
+    obrig.forEach(function(c){ html+=linhaItem(c,false); });
+    html+='</div>';
+  }
+  gruposOrdem.forEach(function(g){
+    html+='<div style="margin-top:10px;border-left:3px solid '+cT+';padding-left:11px;"><div style="font-size:10px;font-weight:700;color:'+cT+';letter-spacing:.6px;text-transform:uppercase;margin-bottom:4px;">Escolha um</div>';
+    gruposMap[g].forEach(function(c, idx){ if(idx>0) html+='<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:1px 0;">ou</div>'; html+=linhaItem(c,true); });
+    html+='</div>';
+  });
+  return html+obsHtml;
+}
 async function carregarToursValores(){
   const area=document.getElementById('view-tours');
   area.innerHTML='<div class="loading">Carregando tours...</div>';
-  const rows=await _hubGet('vw_vendas_tours_valores','destino');
+  const _r=await Promise.all([_hubGet('vw_vendas_tours','localidade'), _hubGet('vw_vendas_entradas','tour')]);
+  const rows=_r[0];
   if(rows===null){ _hubSemKey('view-tours','Links dos Tours'); return; }
+  _vEntradasArr=_r[1]||[]; _vEntradasMap={}; _vEntradasArr.forEach(function(e){ _vEntradasMap[String(e.id)]=e; });
   let h='<div class="view-toolbar"><h2>Links dos Tours</h2></div><div class="hubsec">';
-  if(!rows.length){ h+='<div class="embreve">'+icon('route')+'<h3>Sem tours</h3><p>Nenhum registro no HUB.</p></div></div>'; area.innerHTML=h; return; }
-  const g=_grupoPorDestino(rows);
-  Object.keys(g).sort().forEach(function(d){
-    h+='<div class="hub-dgroup"><h3>'+icon('mountain')+' '+escH(d)+'</h3><table class="utable"><thead><tr><th>Tour</th><th>Código</th><th>Parceiro</th><th>Valor</th></tr></thead><tbody>';
-    g[d].forEach(function(r){ h+='<tr><td style="color:var(--text);font-weight:600">'+escH(r.tour||'—')+'</td><td>'+escH(r.codigo||'—')+'</td><td>'+escH(r.parceiro||'—')+'</td><td style="color:var(--accent);font-weight:700">'+escH(r.valor!=null?r.valor:'—')+'</td></tr>'; });
-    h+='</tbody></table></div>';
+  const ativos=(rows||[]).filter(function(r){ return r.inativo!==true; });
+  if(!ativos.length){ h+='<div class="embreve">'+icon('route')+'<h3>Sem tours</h3><p>Nenhum tour cadastrado no HUB.</p></div></div>'; area.innerHTML=h; return; }
+  const g={}; ativos.forEach(function(r){ const d=r.localidade||'Outros'; (g[d]=g[d]||[]).push(r); });
+  const dests=Object.keys(g).sort(function(a,b){ return a.localeCompare(b,'pt-BR'); });
+  h+='<div class="lk-grid">';
+  dests.forEach(function(d){
+    const n=g[d].length;
+    h+='<div class="lk-ghead"><span class="lk-bar"></span><span class="lk-gname">'+escH(d)+'</span><span class="lk-gcount">'+n+(n===1?' tour':' tours')+'</span></div>';
+    g[d].slice().sort(function(a,b){ return String(a.nome||'').localeCompare(String(b.nome||''),'pt-BR'); }).forEach(function(r){
+      let nu=r.link_notion?(String(r.link_notion).indexOf('http')===0?r.link_notion:'https://'+r.link_notion):null;
+      let c='<div class="lk-card">';
+      c+='<div class="lk-codigo">'+escH(r.codigo||'—')+'</div>';
+      c+='<div class="lk-nome">'+escH(r.nome||'—')+'</div>';
+      c+='<div class="lk-rows">';
+      c+='<div class="lk-row">'+icon('clock')+'<strong>Horário:</strong> '+escH(r.horario||'—')+'</div>';
+      c+='<div class="lk-row">'+icon('map-pin')+'<strong>Ponto:</strong> '+escH(r.ponto_encontro||'—')+'</div>';
+      if(r.aclimatacao && r.aclimatacao!=='-') c+='<div class="lk-row">'+icon('mountain')+'<strong>Aclimatação:</strong> '+escH(r.aclimatacao)+'</div>';
+      if(r.duracao) c+='<div class="lk-row">'+icon('clock')+'<strong>Duração:</strong> Aprox. '+escH(r.duracao)+'</div>';
+      var _ent=null;
+      if(r.entrada_id==='__none__'){ _ent=null; }
+      else if(r.entrada_id){ _ent=_vEntradasMap[String(r.entrada_id)]||null; }
+      else { _ent=_entradaPorNome(r.localidade, r.nome); }
+      if(_ent){ var _inner=_ingressoInner(_ent,'var(--accent)',false); if(_inner) c+='<div style="margin-top:5px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:4px;">'+_inner+'</div>'; }
+      if(nu) c+='<div class="lk-notion"><a href="'+escH(nu)+'" target="_blank" rel="noopener">'+icon('link')+' Ver no Notion '+icon('external-link')+'</a></div>';
+      if(r.emergencia) c+='<div class="lk-emerg">'+icon('siren')+' '+escH(r.emergencia)+'</div>';
+      if(r.parceiro) c+='<div class="lk-parc">'+icon('handshake')+' '+escH(r.parceiro)+'</div>';
+      c+='</div></div>';
+      h+=c;
+    });
   });
-  h+='</div>'; area.innerHTML=h;
+  h+='</div></div>'; area.innerHTML=h;
 }
 
 async function carregarPostos(){
