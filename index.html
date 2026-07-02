@@ -218,6 +218,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-tap-
 .fer-copy{display:inline-flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);padding:7px 12px;border-radius:9px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;flex-shrink:0;transition:all .15s}
 .fer-copy:hover{border-color:var(--accent);color:var(--orange-l)}
 .fer-copy.copied{border-color:var(--accent);color:var(--accent);background:rgba(207,101,20,.14)}
+.fer-empty{font-size:12px;color:var(--text3);padding:4px 2px}
+.fer-card-adm{flex-direction:column;align-items:stretch;gap:10px;cursor:default}
+.fer-card-adm:hover{transform:none;border-color:var(--border);background:var(--surface)}
+.fer-card-adm .fer-card-main{display:flex;align-items:center;gap:12px}
+.fer-open-link{display:inline-flex;align-items:center;gap:5px;color:var(--text3);text-decoration:none;font-size:12px;font-weight:700;flex-shrink:0;padding:6px 10px;border:1px solid var(--border2);border-radius:9px}
+.fer-open-link:hover{border-color:var(--accent);color:var(--orange-l)}
+.fer-admin{display:flex;gap:6px;border-top:1px solid var(--border);padding-top:8px;flex-wrap:wrap}
+.fer-inativo{opacity:.55}
+.fer-badge-off{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);background:var(--surface3);border:1px solid var(--border2);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.fer-sec-row{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.fer-sec-row .fer-sec-nm{flex:1;font-size:13px;font-weight:700;color:var(--text)}
+.fer-sec-row .ic{color:var(--accent)}
+.fer-sec-btns{display:flex;gap:4px}
+.fer-sec-btns .btn-mini{padding:5px 7px}
+.fer-icsel-wrap{display:flex;align-items:center;gap:10px}
+.fer-icsel-wrap select{flex:1}
+.fer-icprev{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surface3);border-radius:10px;color:var(--accent)}
 /* Meu perfil */
 .perfil-avatar-prev{width:88px;height:88px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;background-size:cover;background-position:center;box-shadow:0 0 0 3px var(--surface2),0 0 0 4px var(--border2)}
 /* Modal de aniversário */
@@ -1015,6 +1032,31 @@ body.light-mode .topbar-title img{background:#141414;border-radius:8px;padding:3
   <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalRepo')">Cancelar</button><button class="btn-modal-save" id="repoSalvarBtn" onclick="salvarRepo()">Salvar</button></div>
 </div></div>
 
+<div class="modal-overlay" id="modalFer"><div class="modal" style="max-width:520px">
+  <h2 id="ferTit">Novo link</h2>
+  <div class="form-group"><label>Seção</label><select id="ferSecao"></select></div>
+  <div class="form-group"><label>Tipo</label><select id="ferTipo" onchange="onTipoFer()"><option value="link">Link</option><option value="telefone">Telefone (com botão copiar)</option></select></div>
+  <div class="form-group"><label>Ícone</label><div class="fer-icsel-wrap"><span class="fer-icprev" id="ferIcPrev"></span><select id="ferIcone" onchange="_ferIcPrev()"></select></div></div>
+  <div class="form-group"><label>Nome</label><input id="ferNome"></div>
+  <div class="form-group"><label>Descrição (opcional)</label><input id="ferDesc"></div>
+  <div class="form-group" id="ferUrlWrap"><label>URL</label><input id="ferUrl" placeholder="https://..."></div>
+  <div class="form-group" id="ferTelWrap" style="display:none"><label>Telefone</label><input id="ferTel" placeholder="+55 21 99999-0000"></div>
+  <label class="chk"><input type="checkbox" id="ferAtivo" checked> Ativo (visível para a equipe)</label>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalFer')">Cancelar</button><button class="btn-modal-save" id="ferSalvarBtn" onclick="salvarFer()">Salvar</button></div>
+</div></div>
+
+<div class="modal-overlay" id="modalFerSec"><div class="modal" style="max-width:480px">
+  <h2>Gerenciar seções</h2>
+  <div class="form-group"><label id="ferSecFormLbl">Nova seção</label><div class="fer-icsel-wrap"><span class="fer-icprev" id="ferSecIcPrev"></span><select id="ferSecIcone" onchange="_ferSecIcPrev()"></select></div></div>
+  <div class="form-group"><input id="ferSecNome" placeholder="Nome da seção"></div>
+  <div class="modal-actions" style="justify-content:flex-start;margin:2px 0 14px">
+    <button class="btn-novo" id="ferSecSalvarBtn" onclick="salvarSecaoFer()">Adicionar</button>
+    <button class="btn-mini" id="ferSecCancelBtn" style="display:none" onclick="_ferSecCancelEdit()">Cancelar edição</button>
+  </div>
+  <div id="ferSecList"></div>
+  <div class="modal-actions"><button class="btn-modal-cancel" onclick="fecharModal('modalFerSec')">Fechar</button></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1533,49 +1575,186 @@ function _kmlParse(kmlText){
   }
   return out;
 }
-function carregarFerramentas(){
+var FER_ICONES=['link','globe','settings','layout-grid','credit-card','banknote','tag','file-text','file-spreadsheet','clipboard-list','shield','download','upload','image','play','pencil','users','user','phone','map','map-pin','plane','briefcase','handshake','ticket','key','lock','home','hotel','rocket','sparkles','folder','send','heart','lightbulb','mountain','utensils','shopping-bag','bell','clock','sun','moon'];
+var _ferSecoes=[], _ferLinks=[], _ferEdit=null, _ferSecEdit=null;
+function _ferJsq(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function _ferIconeOptions(sel){ var o=''; FER_ICONES.forEach(function(n){ o+='<option value="'+n+'"'+(n===sel?' selected':'')+'>'+n+'</option>'; }); return o; }
+function _ferIcPrev(){ var s=document.getElementById('ferIcone'), p=document.getElementById('ferIcPrev'); if(s&&p) p.innerHTML=icon(s.value||'link',18); }
+function _ferSecIcPrev(){ var s=document.getElementById('ferSecIcone'), p=document.getElementById('ferSecIcPrev'); if(s&&p) p.innerHTML=icon(s.value||'link',18); }
+async function carregarFerramentas(){
   var area=document.getElementById('view-ferramentas'); if(!area) return;
-  var sistemas=[
-    {ic:'users',nome:'RD CRM',desc:'Entrada de Leads',url:'https://crm.rdstation.com/app/deals/pipeline'},
-    {ic:'file-text',nome:'SoftTur',desc:'Criar Orçamento',url:'https://fuigosteitrips.soft.tur.br/auth/default.aspx?ReturnUrl=%2fBase%2f'},
-    {ic:'layout-grid',nome:'Notion Intranet',desc:'Fui Gostei Trips',url:'https://app.notion.com/p/fuigosteitrips/Fui-Gostei-Trips-Intranet-6705d691798e424cacfcbe878ba550d2'}
-  ];
-  var ferramentas=[
-    {ic:'banknote',nome:'Simulador de Parcelamento',desc:'',url:'https://docs.google.com/spreadsheets/d/1at_WSPVXr526H-b1jv8qHtQohJ8-idTrR2p8KOEjw9w/edit?pli=1&gid=711800012#gid=711800012'},
-    {ic:'tag',nome:'Taxas para Parcelamento',desc:'Passo a passo',url:'https://docs.google.com/document/d/1FizyYOeP1VLPHLGuV-pEu-HXqrDzDi__WM9lg9-7oCo/edit?tab=t.0'},
-    {ic:'clipboard-list',nome:'Catálogos de Passeios',desc:'',url:'https://fuigosteitrips.com.br/lps/catalogos/'},
-    {ic:'shield',nome:'Política de Cancelamento',desc:'',url:'https://drive.google.com/drive/folders/1wtOWf7_lmjSQpLyKHQkedFUx2-OwIv6h'},
-    {ic:'file-spreadsheet',nome:'ORCA 6.6',desc:'Privados',url:'https://docs.google.com/spreadsheets/d/11TRAb7DdBChUxgsk6MHkwvva_gT6ZUuSdfGUzRF0wys/edit?pli=1&gid=360811353#gid=360811353'},
-    {ic:'moon',nome:'Fases da Lua - Atacama',desc:'Calendário lunar (San Pedro)',url:'https://pt.tutiempo.net/san-pedro-de-atacama.html?dados=calendario#cal'}
-  ];
-  var pagamentos=[
-    {ic:'banknote',nome:'Nautt',desc:'Link de PIX',url:'https://painel.nautt.finance/ponto-de-venda/90'},
-    {ic:'credit-card',nome:'Pagar.me',desc:'Link de cartão de crédito',url:'https://id.pagar.me/signin'},
-    {ic:'shield',nome:'Linkka',desc:'Seguro saúde/viagem',url:'https://www.linkkaseguro.com.br/linkka/inicio'}
-  ];
-  var devolucoes=[
-    {ic:'file-text',nome:'Solicitação de Devoluções',desc:'Formulário Google',url:'https://docs.google.com/forms/d/e/1FAIpQLSc9aTZxoQMzOkzHNkDDPaYzOGURgE0SUjdCcrUNoxCwuOik7A/viewform'},
-    {ic:'file-spreadsheet',nome:'Devoluções',desc:'Planilha para preencher',url:'https://docs.google.com/spreadsheets/d/1IwIPxNarAe9ot2U3jT70X5OuIDnfYv0LcZWn-OyUpLY/edit?gid=1527462407#gid=1527462407'}
-  ];
-  var siteredes=[
-    {ic:'globe',nome:'Site FGT',desc:'fuigosteitrips.com.br',url:'https://fuigosteitrips.com.br'},
-    {ic:'pencil',nome:'Blog',desc:'Artigos e dicas de viagem',url:'https://fuigosteitrips.com.br/blog'},
-    {ic:'image',nome:'Instagram',desc:'@fuigosteitrips',url:'https://www.instagram.com/fuigosteitrips'},
-    {ic:'play',nome:'YouTube',desc:'@fuigosteitrips',url:'https://www.youtube.com/@fuigosteitrips'}
-  ];
-  var card=function(x){ return '<a class="fer-card" href="'+_attrEsc(x.url)+'" target="_blank" rel="noopener"><span class="fer-ic">'+icon(x.ic,18)+'</span><span class="fer-info"><span class="fer-name">'+escH(x.nome)+'</span>'+(x.desc?('<span class="fer-desc">'+escH(x.desc)+'</span>'):'')+'</span><span class="fer-arrow">'+icon('external-link',15)+'</span></a>'; };
-  var sec=function(icn,titulo,itens){ return '<div class="fer-sec"><div class="fer-sec-title">'+icon(icn,16)+' '+escH(titulo)+'</div><div class="fer-grid">'+itens.map(card).join('')+'</div></div>'; };
-  var h='<div style="max-width:900px;margin:0 auto">';
+  area.innerHTML='<div class="loading">Carregando...</div>';
+  try{
+    var rs=await sb.from('ferramentas_secoes').select('*').order('ordem',{ascending:true}).order('id',{ascending:true});
+    if(rs.error) throw rs.error;
+    var rl=await sb.from('ferramentas_links').select('*').order('ordem',{ascending:true}).order('id',{ascending:true});
+    if(rl.error) throw rl.error;
+    _ferSecoes=rs.data||[]; _ferLinks=rl.data||[];
+    renderFerramentas();
+  }catch(ex){ area.innerHTML='<div class="loading">Erro ao carregar: '+escH(ex.message||ex)+'</div>'; }
+}
+function _ferCardHTML(x,admin){
+  var isTel=x.tipo==='telefone';
+  var body='<span class="fer-ic">'+icon(x.icone||'link',18)+'</span>'
+    +'<span class="fer-info"><span class="fer-name">'+escH(x.nome)+((!x.ativo&&admin)?' <span class="fer-badge-off">Inativo</span>':'')+'</span>'
+    +(x.descricao?'<span class="fer-desc">'+escH(x.descricao)+'</span>':'')
+    +(isTel?'<span class="fer-tel-num">'+escH(x.telefone||'')+'</span>':'')
+    +'</span>';
+  if(!admin){
+    if(isTel) return '<div class="fer-card fer-tel">'+body+'<button class="fer-copy" onclick="_copiarTexto(\''+_ferJsq(x.telefone)+'\',this)">'+icon('copy',14)+' Copiar</button></div>';
+    return '<a class="fer-card" href="'+_attrEsc(x.url)+'" target="_blank" rel="noopener">'+body+'<span class="fer-arrow">'+icon('external-link',15)+'</span></a>';
+  }
+  var openBtn=isTel
+    ? '<button class="fer-copy" onclick="_copiarTexto(\''+_ferJsq(x.telefone)+'\',this)">'+icon('copy',14)+' Copiar</button>'
+    : '<a class="fer-open-link" href="'+_attrEsc(x.url)+'" target="_blank" rel="noopener">'+icon('external-link',14)+' Abrir</a>';
+  return '<div class="fer-card fer-card-adm'+(x.ativo?'':' fer-inativo')+'">'
+    +'<div class="fer-card-main">'+body+openBtn+'</div>'
+    +'<div class="fer-admin">'
+    +'<button class="btn-mini" onclick="abrirEditarFer('+x.id+')">'+icon('pencil')+' Editar</button>'
+    +'<button class="btn-mini" onclick="toggleAtivoFer('+x.id+')">'+icon(x.ativo?'eye-off':'eye')+' '+(x.ativo?'Inativar':'Reativar')+'</button>'
+    +'<button class="btn-mini del" onclick="excluirFer('+x.id+')">'+icon('trash-2')+' Excluir</button>'
+    +'</div></div>';
+}
+function renderFerramentas(){
+  var area=document.getElementById('view-ferramentas'); if(!area) return;
+  var admin=isAdmin(); var h='';
+  if(admin) h+='<div class="view-toolbar"><button class="btn-mini" onclick="abrirSecoesFer()">'+icon('settings')+' Gerenciar seções</button><button class="btn-novo" onclick="abrirNovaFer()">'+icon('plus')+' Novo link</button></div>';
+  h+='<div style="max-width:900px;margin:0 auto">';
   h+='<p style="color:var(--text3);font-size:13px;margin:0 0 20px">Acesso rápido a sistemas, ferramentas e parceiros.</p>';
-  h+=sec('settings','Sistemas Internos',sistemas);
-  h+=sec('credit-card','Ferramentas de Venda',ferramentas);
-  h+=sec('banknote','Pagamentos',pagamentos);
-  h+=sec('download','Devoluções',devolucoes);
-  h+=sec('globe','Site e Redes Sociais',siteredes);
-  h+='<div class="fer-sec"><div class="fer-sec-title">'+icon('briefcase',16)+' Parceiros</div><div class="fer-grid">';
-  h+='<div class="fer-card fer-tel"><span class="fer-ic">'+icon('plane',18)+'</span><span class="fer-info"><span class="fer-name">Kurti Trips</span><span class="fer-desc">Outros destinos e passagens</span><span class="fer-tel-num">+55 21 99659-0350</span></span><button class="fer-copy" onclick="_copiarTexto(\'+55 21 99659-0350\',this)">'+icon('copy',14)+' Copiar</button></div>';
-  h+='</div></div></div>';
-  area.innerHTML=h;
+  if(!_ferSecoes.length){ h+='<div class="embreve">'+icon('folder')+'<h3>Nada por aqui ainda</h3><p>'+(admin?'Use "Gerenciar seções" e "Novo link" para começar.':'Sem ferramentas cadastradas.')+'</p></div>'; }
+  _ferSecoes.forEach(function(s){
+    var itens=_ferLinks.filter(function(l){ return l.secao_id===s.id && (admin||l.ativo); });
+    if(!itens.length && !admin) return;
+    h+='<div class="fer-sec"><div class="fer-sec-title">'+icon(s.icone||'link',16)+' '+escH(s.nome)+'</div>';
+    h+=itens.length ? ('<div class="fer-grid">'+itens.map(function(x){return _ferCardHTML(x,admin);}).join('')+'</div>') : '<div class="fer-empty">Sem links nesta seção.</div>';
+    h+='</div>';
+  });
+  h+='</div>'; area.innerHTML=h;
+}
+function onTipoFer(){ var t=document.getElementById('ferTipo').value; document.getElementById('ferUrlWrap').style.display=(t==='telefone')?'none':'block'; document.getElementById('ferTelWrap').style.display=(t==='telefone')?'block':'none'; }
+function _ferSecOptions(sel){ var o=''; _ferSecoes.forEach(function(s){ o+='<option value="'+s.id+'"'+(String(s.id)===String(sel)?' selected':'')+'>'+escH(s.nome)+'</option>'; }); return o; }
+function _ferProxOrdem(secId){ var max=0; _ferLinks.forEach(function(l){ if(l.secao_id===secId && (l.ordem||0)>max) max=l.ordem||0; }); return max+10; }
+function abrirNovaFer(){
+  if(!_ferSecoes.length){ showToast('Crie uma seção primeiro em "Gerenciar seções".'); return; }
+  _ferEdit=null; document.getElementById('ferTit').textContent='Novo link';
+  document.getElementById('ferSecao').innerHTML=_ferSecOptions(_ferSecoes[0].id);
+  document.getElementById('ferIcone').innerHTML=_ferIconeOptions('link');
+  document.getElementById('ferTipo').value='link';
+  document.getElementById('ferNome').value=''; document.getElementById('ferDesc').value='';
+  document.getElementById('ferUrl').value=''; document.getElementById('ferTel').value='';
+  document.getElementById('ferAtivo').checked=true;
+  onTipoFer(); _ferIcPrev(); document.getElementById('modalFer').classList.add('open');
+}
+function abrirEditarFer(id){
+  var x=_ferLinks.find(function(l){return l.id===id;}); if(!x) return; _ferEdit=x;
+  document.getElementById('ferTit').textContent='Editar link';
+  document.getElementById('ferSecao').innerHTML=_ferSecOptions(x.secao_id);
+  document.getElementById('ferIcone').innerHTML=_ferIconeOptions(x.icone||'link');
+  document.getElementById('ferTipo').value=x.tipo||'link';
+  document.getElementById('ferNome').value=x.nome||''; document.getElementById('ferDesc').value=x.descricao||'';
+  document.getElementById('ferUrl').value=x.url||''; document.getElementById('ferTel').value=x.telefone||'';
+  document.getElementById('ferAtivo').checked=x.ativo!==false;
+  onTipoFer(); _ferIcPrev(); document.getElementById('modalFer').classList.add('open');
+}
+async function salvarFer(){
+  var tipo=document.getElementById('ferTipo').value;
+  var row={
+    secao_id:parseInt(document.getElementById('ferSecao').value,10),
+    tipo:tipo, icone:document.getElementById('ferIcone').value,
+    nome:document.getElementById('ferNome').value.trim(),
+    descricao:document.getElementById('ferDesc').value.trim()||null,
+    ativo:document.getElementById('ferAtivo').checked
+  };
+  if(!row.nome){ showToast('Informe o nome.'); return; }
+  if(!row.secao_id){ showToast('Selecione a seção.'); return; }
+  if(tipo==='telefone'){ row.telefone=document.getElementById('ferTel').value.trim(); row.url=null; if(!row.telefone){ showToast('Informe o telefone.'); return; } }
+  else { row.url=document.getElementById('ferUrl').value.trim(); row.telefone=null; if(!row.url){ showToast('Informe a URL.'); return; } }
+  var btn=document.getElementById('ferSalvarBtn'); btn.disabled=true;
+  try{
+    if(_ferEdit){ var r=await sb.from('ferramentas_links').update(row).eq('id',_ferEdit.id); if(r.error) throw r.error; }
+    else { row.ordem=_ferProxOrdem(row.secao_id); var r2=await sb.from('ferramentas_links').insert(row); if(r2.error) throw r2.error; }
+    fecharModal('modalFer'); showToast('Link salvo!'); await carregarFerramentas();
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  btn.disabled=false;
+}
+async function toggleAtivoFer(id){
+  var x=_ferLinks.find(function(l){return l.id===id;}); if(!x) return;
+  try{ var r=await sb.from('ferramentas_links').update({ativo:!x.ativo}).eq('id',id); if(r.error) throw r.error; await carregarFerramentas(); showToast(x.ativo?'Link inativado.':'Link reativado.'); }
+  catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+}
+function excluirFer(id){
+  var x=_ferLinks.find(function(l){return l.id===id;}); if(!x) return;
+  pedirConfirm('Excluir "'+x.nome+'" de vez?', async function(){
+    try{ var r=await sb.from('ferramentas_links').delete().eq('id',id); if(r.error) throw r.error; showToast('Excluído.'); await carregarFerramentas(); }
+    catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  });
+}
+// ---- Gerenciar seções ----
+function abrirSecoesFer(){ document.getElementById('ferSecIcone').innerHTML=_ferIconeOptions('link'); _ferSecResetForm(); renderSecoesFer(); document.getElementById('modalFerSec').classList.add('open'); }
+function _ferSecResetForm(){
+  _ferSecEdit=null;
+  document.getElementById('ferSecFormLbl').textContent='Nova seção';
+  document.getElementById('ferSecNome').value='';
+  document.getElementById('ferSecIcone').value='link'; _ferSecIcPrev();
+  document.getElementById('ferSecSalvarBtn').innerHTML=icon('plus')+' Adicionar';
+  document.getElementById('ferSecCancelBtn').style.display='none';
+}
+function _ferSecCancelEdit(){ _ferSecResetForm(); }
+function renderSecoesFer(){
+  var box=document.getElementById('ferSecList'); if(!box) return;
+  if(!_ferSecoes.length){ box.innerHTML='<div class="fer-empty">Nenhuma seção ainda.</div>'; return; }
+  var down='<span style="display:inline-flex;transform:rotate(180deg)">'+icon('chevron-up')+'</span>';
+  var h='';
+  _ferSecoes.forEach(function(s,i){
+    var n=_ferLinks.filter(function(l){return l.secao_id===s.id;}).length;
+    h+='<div class="fer-sec-row"><span class="ic">'+icon(s.icone||'link',16)+'</span>'
+      +'<span class="fer-sec-nm">'+escH(s.nome)+' <span style="color:var(--text3);font-weight:600">('+n+')</span></span>'
+      +'<span class="fer-sec-btns">'
+      +'<button class="btn-mini" onclick="_ferSecMover('+s.id+',-1)"'+(i===0?' disabled':'')+'>'+icon('chevron-up')+'</button>'
+      +'<button class="btn-mini" onclick="_ferSecMover('+s.id+',1)"'+(i===_ferSecoes.length-1?' disabled':'')+'>'+down+'</button>'
+      +'<button class="btn-mini" onclick="editarSecaoFer('+s.id+')">'+icon('pencil')+'</button>'
+      +'<button class="btn-mini del" onclick="excluirSecaoFer('+s.id+')">'+icon('trash-2')+'</button>'
+      +'</span></div>';
+  });
+  box.innerHTML=h;
+}
+async function _ferSecMover(id,dir){
+  var idx=-1; for(var i=0;i<_ferSecoes.length;i++){ if(_ferSecoes[i].id===id){ idx=i; break; } }
+  if(idx<0) return; var j=idx+dir; if(j<0||j>=_ferSecoes.length) return;
+  var arr=_ferSecoes.slice(); var tmp=arr[idx]; arr[idx]=arr[j]; arr[j]=tmp;
+  try{
+    for(var k=0;k<arr.length;k++){ var novaOrdem=(k+1)*10; if(arr[k].ordem!==novaOrdem){ var r=await sb.from('ferramentas_secoes').update({ordem:novaOrdem}).eq('id',arr[k].id); if(r.error) throw r.error; } }
+    await carregarFerramentas(); renderSecoesFer();
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+}
+function editarSecaoFer(id){
+  var s=_ferSecoes.find(function(x){return x.id===id;}); if(!s) return; _ferSecEdit=s;
+  document.getElementById('ferSecFormLbl').textContent='Editar seção';
+  document.getElementById('ferSecNome').value=s.nome||'';
+  document.getElementById('ferSecIcone').value=s.icone||'link'; _ferSecIcPrev();
+  document.getElementById('ferSecSalvarBtn').innerHTML=icon('check')+' Salvar';
+  document.getElementById('ferSecCancelBtn').style.display='';
+}
+async function salvarSecaoFer(){
+  var nome=document.getElementById('ferSecNome').value.trim();
+  var ic=document.getElementById('ferSecIcone').value||'link';
+  if(!nome){ showToast('Informe o nome da seção.'); return; }
+  var btn=document.getElementById('ferSecSalvarBtn'); btn.disabled=true;
+  try{
+    if(_ferSecEdit){ var r=await sb.from('ferramentas_secoes').update({nome:nome,icone:ic}).eq('id',_ferSecEdit.id); if(r.error) throw r.error; }
+    else { var ord=_ferSecoes.reduce(function(m,s){return Math.max(m,s.ordem||0);},0)+10; var r2=await sb.from('ferramentas_secoes').insert({nome:nome,icone:ic,ordem:ord}); if(r2.error) throw r2.error; }
+    await carregarFerramentas(); _ferSecResetForm(); renderSecoesFer(); showToast('Seção salva!');
+  }catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  btn.disabled=false;
+}
+function excluirSecaoFer(id){
+  var s=_ferSecoes.find(function(x){return x.id===id;}); if(!s) return;
+  var n=_ferLinks.filter(function(l){return l.secao_id===id;}).length;
+  var msg=n>0 ? ('A seção "'+s.nome+'" tem '+n+' link(s). Excluir a seção remove todos eles. Continuar?') : ('Excluir a seção "'+s.nome+'"?');
+  pedirConfirm(msg, async function(){
+    try{ var r=await sb.from('ferramentas_secoes').delete().eq('id',id); if(r.error) throw r.error; await carregarFerramentas(); renderSecoesFer(); showToast('Seção excluída.'); }
+    catch(ex){ showToast('Erro: '+(ex.message||ex)); }
+  });
 }
 
 // ---------- MEU PERFIL ----------
